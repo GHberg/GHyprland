@@ -8,7 +8,7 @@ set -euo pipefail
 STATE_FILE="/tmp/waybar_pomodoro_state"
 COLLAPSE_STATE="/tmp/waybar_pomodoro_collapsed"
 
-# Handle click
+# Handle click action
 if [ "${1:-}" = "skip" ]; then
     /home/bjorn/.config/waybar/scripts/pomodoro.sh skip
     exit 0

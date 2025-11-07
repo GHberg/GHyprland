@@ -138,14 +138,57 @@ tooltip {
   opacity: 0;
 }
 
-#custom-screenrecording-indicator {
+/* System monitor - icon separate from pill, just like Spotify/Pomodoro */
+/* GPU icon - standalone, no pill shape */
+#custom-gpu-icon {
+  color: @foreground;
+  padding: 0px;
+  margin: 0px 7.5px;
   min-width: 12px;
-  margin-left: 8.75px;
-  font-size: 10px;
 }
 
-#custom-screenrecording-indicator.active {
-  color: #a55555;
+/* CPU usage - left edge of pill */
+#custom-cpu {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: @foreground;
+  border-radius: 10px 0px 0px 10px;
+  padding: 1px 6px 1px 8px;
+  margin: 5px 0px 5px 3px;
+  min-width: 20px;
+  transition: all 0.3s ease;
+}
+
+/* GPU usage - middle of pill */
+#custom-gpu {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: @foreground;
+  border-radius: 0px;
+  padding: 1px 6px;
+  margin: 5px 0px;
+  min-width: 20px;
+  transition: all 0.3s ease;
+}
+
+/* RAM usage - right edge of pill */
+#custom-ram {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: @foreground;
+  border-radius: 0px 10px 10px 0px;
+  padding: 1px 8px 1px 6px;
+  margin: 5px 3px 5px 0px;
+  min-width: 20px;
+  transition: all 0.3s ease;
+}
+
+/* Power module - standalone pill shape */
+#custom-power {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: @foreground;
+  border-radius: 10px;
+  padding: 1px 8px 1px 5px;
+  margin: 5px 3px;
+  min-width: 20px;
+  transition: all 0.3s ease;
 }
 
 /* Pomodoro icon - no pill shape, just like omarchy icon */

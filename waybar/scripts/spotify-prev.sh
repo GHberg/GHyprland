@@ -7,7 +7,7 @@ set -euo pipefail
 
 STATE_FILE="/tmp/waybar-spotify-state"
 
-# Handle click
+# Handle click action
 if [ "${1:-}" = "prev" ]; then
     playerctl -p spotify previous 2>/dev/null
     exit 0
