@@ -49,21 +49,22 @@ if [ -n "$ws_info" ]; then
     window_count=$(echo "$ws_info" | jq -r '.windows')
 
     if [ "$window_count" -gt 0 ]; then
-        # Get all clients on this workspace with class and title
-        workspace_clients=$(echo "$clients" | jq -r --arg id "$WORKSPACE_ID" '.[] | select(.workspace.id == ($id | tonumber)) | .class')
+        # Get all clients on this workspace with both class and title
+        workspace_windows=$(echo "$clients" | jq -c --arg id "$WORKSPACE_ID" \
+            '.[] | select(.workspace.id == ($id | tonumber)) | {class: .class, title: .title}')
 
         # Build icon string and tooltip information
         icon_string=""
         tooltip_apps=""
 
-        while IFS= read -r class; do
-            [ -z "$class" ] && continue
+        while IFS= read -r window; do
+            [ -z "$window" ] && continue
+
+            class=$(echo "$window" | jq -r '.class')
+            title=$(echo "$window" | jq -r '.title')
+
             icon=$(get_app_icon "$class")
             icon_string+="${icon} "
-
-            # Get window title for this class
-            title=$(echo "$clients" | jq -r --arg id "$WORKSPACE_ID" --arg cls "$class" \
-                '.[] | select(.workspace.id == ($id | tonumber) and .class == $cls) | .title' | head -1)
 
             # Get clean app name
             app_name=$(get_app_name "$class")
@@ -83,7 +84,7 @@ if [ -n "$ws_info" ]; then
             else
                 tooltip_apps+="$app_name\\n"
             fi
-        done <<< "$workspace_clients"
+        done <<< "$workspace_windows"
 
         # Trim trailing space and newline
         icon_string="${icon_string% }"
