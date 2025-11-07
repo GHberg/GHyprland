@@ -77,10 +77,13 @@ for val in "${history[@]}"; do
 done
 avg_usage=$(awk "BEGIN {printf \"%.0f\", $sum / ${#history[@]}}")
 
+# Get number of CPU cores for proper percentage calculation
+num_cores=$(nproc)
+
 # Get top 5 CPU-consuming applications (aggregated by name)
 # Disable pipefail temporarily to avoid SIGPIPE from head
 set +o pipefail
-top_processes=$(ps aux | awk 'NR>1 {
+top_processes=$(ps aux | awk -v cores="$num_cores" 'NR>1 {
     # Extract basename from command path
     cmd = $11
     gsub(/^.*\//, "", cmd)
@@ -107,13 +110,15 @@ top_processes=$(ps aux | awk 'NR>1 {
         }
     }
 
-    # Aggregate CPU by application name
+    # Aggregate CPU by application name (ps aux shows per-core %)
     cpu[cmd] += $3
 }
 END {
     # Sort by CPU usage and output top 5
     for (app in cpu) {
-        printf "%s %.1f\n", app, cpu[app]
+        # Convert per-core % to system % by dividing by number of cores
+        system_cpu = cpu[app] / cores
+        printf "%s %.1f\n", app, system_cpu
     }
 }' | sort -k2 -rn 2>/dev/null | head -n 5 | awk '{$1 = toupper(substr($1,1,1)) tolower(substr($1,2)); printf "▸ %s %s%%\\n", $1, $2}')
 set -o pipefail

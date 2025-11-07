@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------
-# power.sh – Waybar GPU electricity cost module
+# power.sh – Waybar GPU electricity cost module (Multi-vendor support)
 #
 # Calculates GPU electricity cost per hour with 60-second rolling average
 # Updates every 20 seconds
+# Supports AMD, Nvidia, and Intel GPUs with automatic detection
 # ------------------------------------------------------------------
 
 set -euo pipefail
@@ -14,11 +15,21 @@ HISTORY_FILE="/tmp/waybar_gpu_cost_history"
 # Electricity cost per kWh in euros
 COST_PER_KWH=0.35
 
-# Read GPU power (in microwatts, convert to watts)
+# Read GPU power based on vendor
 gpu_power_w=0
-if [ -f "/sys/class/drm/card1/device/hwmon/hwmon2/power1_average" ]; then
-    gpu_power_uw=$(cat /sys/class/drm/card1/device/hwmon/hwmon2/power1_average 2>/dev/null || echo 0)
-    gpu_power_w=$(awk "BEGIN {printf \"%.1f\", $gpu_power_uw / 1000000}")
+
+# Try Nvidia first
+if command -v nvidia-smi &>/dev/null; then
+    if power_data=$(nvidia-smi --query-gpu=power.draw --format=csv,noheader,nounits 2>/dev/null); then
+        gpu_power_w=$(echo "$power_data" | xargs)
+    fi
+elif [ -n "$(find /sys/class/drm/card*/device/hwmon/hwmon*/power1_average 2>/dev/null | head -1)" ]; then
+    # Try AMD/Intel with hwmon interface
+    power_file=$(find /sys/class/drm/card*/device/hwmon/hwmon*/power1_average 2>/dev/null | head -1)
+    if [ -f "$power_file" ]; then
+        gpu_power_uw=$(cat "$power_file" 2>/dev/null || echo 0)
+        gpu_power_w=$(awk "BEGIN {printf \"%.1f\", $gpu_power_uw / 1000000}")
+    fi
 fi
 
 # Update history and calculate rolling average
