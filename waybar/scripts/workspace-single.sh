@@ -49,25 +49,56 @@ if [ -n "$ws_info" ]; then
     window_count=$(echo "$ws_info" | jq -r '.windows')
 
     if [ "$window_count" -gt 0 ]; then
-        # Get all clients on this workspace
-        workspace_clients=$(echo "$clients" | jq -r --arg id "$WORKSPACE_ID" '.[] | select(.workspace.id == ($id | tonumber)) | .class')
+        # Get all clients on this workspace with both class and title
+        workspace_windows=$(echo "$clients" | jq -c --arg id "$WORKSPACE_ID" \
+            '.[] | select(.workspace.id == ($id | tonumber)) | {class: .class, title: .title}')
 
-        # Build icon string by showing each app icon individually
+        # Build icon string and tooltip information
         icon_string=""
-        while IFS= read -r class; do
-            [ -z "$class" ] && continue
+        tooltip_apps=""
+
+        while IFS= read -r window; do
+            [ -z "$window" ] && continue
+
+            class=$(echo "$window" | jq -r '.class')
+            title=$(echo "$window" | jq -r '.title')
+
             icon=$(get_app_icon "$class")
             icon_string+="${icon} "
-        done <<< "$workspace_clients"
 
-        # Trim trailing space
+            # Get clean app name
+            app_name=$(get_app_name "$class")
+            app_name="$(echo "$app_name" | sed 's/^./\U&/')"  # Capitalize first letter
+
+            # Clean up title by removing app name suffix
+            if [ -n "$title" ]; then
+                # Remove common app name suffixes from titles
+                title=$(echo "$title" | sed -e 's/ - Chromium$//' -e 's/ - Mozilla Firefox$//' \
+                    -e 's/ - draw\.io$//' -e 's/\.drawio//' -e 's/ - Visual Studio Code$//' \
+                    -e 's/ - VSCode$//' -e 's/ - Brave$//' -e 's/ - Google Chrome$//')
+            fi
+
+            # Build tooltip line
+            if [ -n "$title" ]; then
+                tooltip_apps+="$app_name: $title\\n"
+            else
+                tooltip_apps+="$app_name\\n"
+            fi
+        done <<< "$workspace_windows"
+
+        # Trim trailing space and newline
         icon_string="${icon_string% }"
+        tooltip_apps="${tooltip_apps%\\n}"
 
         # Display format: <number> <icons> (no brackets, icons repeat for each instance)
         display_text="$WORKSPACE_ID $icon_string"
+
+        # Build complete tooltip with empty line after workspace name
+        tooltip_text="Workspace $WORKSPACE_ID\\n\\n$tooltip_apps"
     else
         # No windows
         display_text="$WORKSPACE_ID"
+        tooltip_text="Workspace $WORKSPACE_ID"
     fi
 
     # Check if this is the active workspace
@@ -84,6 +115,7 @@ if [ -n "$ws_info" ]; then
 else
     # Empty workspace
     display_text="$WORKSPACE_ID"
+    tooltip_text="Workspace $WORKSPACE_ID"
     css_class="empty"
 fi
 
@@ -93,4 +125,4 @@ if echo "$visible_workspaces" | grep -q "^${WORKSPACE_ID}$"; then
 fi
 
 # Output as JSON for Waybar
-echo "{\"text\":\"$display_text\",\"tooltip\":\"Workspace $WORKSPACE_ID\",\"class\":\"$css_class\"}"
+echo "{\"text\":\"$display_text\",\"tooltip\":\"$tooltip_text\",\"class\":\"$css_class\"}"
