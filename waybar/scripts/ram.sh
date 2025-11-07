@@ -7,6 +7,17 @@
 
 set -euo pipefail
 
+STATE_FILE="/tmp/waybar-system-metrics-state"
+
+# Check if collapsed
+if [ -f "$STATE_FILE" ]; then
+    state=$(cat "$STATE_FILE")
+    if [ "$state" = "collapsed" ]; then
+        echo "{\"text\":\"\",\"tooltip\":\"\",\"class\":\"hidden\"}"
+        exit 0
+    fi
+fi
+
 # History file for rolling average
 HISTORY_FILE="/tmp/waybar_ram_history"
 

@@ -16,15 +16,11 @@
       "custom/ws6"
     ],
     "modules-center": [
+      "custom/gpu-icon",
       "custom/cpu",
-      "custom/separator",
       "custom/gpu",
-      "custom/separator#2",
-      "custom/power",
-      "custom/separator",
       "custom/ram",
-      "custom/update",
-      "custom/screenrecording-indicator"
+      "custom/update"
     ],
     "modules-right": [
       "group/tray-expander",
@@ -116,32 +112,56 @@
       "format": "",
       "tooltip": false
     },
-    "custom/screenrecording-indicator": {
-      "on-click": "omarchy-cmd-screenrecord",
-      "exec": "$OMARCHY_PATH/default/waybar/indicators/screen-recording.sh",
-      "signal": 14,
-      "return-type": "json"
+    "custom/cpu-icon": {
+      "exec": "/home/bjorn/.config/waybar/scripts/cpu-icon.sh",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "/home/bjorn/.config/waybar/scripts/cpu-icon.sh toggle",
+      "tooltip": true,
+      "signal": 1
     },
     "custom/cpu": {
       "exec": "/home/bjorn/.config/waybar/scripts/cpu.sh",
-      "format": "CPU {}% ",
+      "format": "CPU {}%",
       "interval": 5,
       "return-type": "json",
-      "tooltip": true
+      "tooltip": true,
+      "signal": 2
+    },
+    "custom/gpu-icon": {
+      "exec": "/home/bjorn/.config/waybar/scripts/gpu-icon.sh",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "/home/bjorn/.config/waybar/scripts/gpu-icon.sh toggle",
+      "tooltip": "System Metrics\nClick to collapse/expand",
+      "signal": 3
     },
     "custom/gpu": {
       "exec": "/home/bjorn/.config/waybar/scripts/gpu.sh",
-      "format": "GPU {}% ",
+      "format": "GPU {}%",
       "interval": 5,
       "return-type": "json",
-      "tooltip": true
+      "tooltip": true,
+      "signal": 4
+    },
+    "custom/ram-icon": {
+      "exec": "/home/bjorn/.config/waybar/scripts/ram-icon.sh",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "/home/bjorn/.config/waybar/scripts/ram-icon.sh toggle",
+      "tooltip": true,
+      "signal": 5
     },
     "custom/ram": {
       "exec": "/home/bjorn/.config/waybar/scripts/ram.sh",
-      "format": "RAM {}% ",
+      "format": "RAM {}%",
       "interval": 5,
       "return-type": "json",
-      "tooltip": true
+      "tooltip": true,
+      "signal": 6
     },
     "custom/spotify-prev": {
       "exec": "/home/bjorn/.config/waybar/scripts/spotify-prev.sh",
@@ -174,21 +194,14 @@
       "on-click": "/home/bjorn/.config/waybar/scripts/spotify-next.sh next",
       "tooltip": true
     },
-    "custom/power": {
-      "exec": "/home/bjorn/.config/waybar/scripts/power.sh",
-      "format": "€{}/h ",
-      "interval": 20,
-      "return-type": "json",
-      "tooltip": true
-    },
-    "custom/separator": {
-      "format": "| ",
-      "tooltip": false
-    },
-    "custom/separator#2": {
-      "format": "= ",
-      "tooltip": false
-    },
+    // PARKED FOR LATER: Power/Energy consumption module
+    // "custom/power": {
+    //   "exec": "/home/bjorn/.config/waybar/scripts/power.sh",
+    //   "format": "€{}/h",
+    //   "interval": 20,
+    //   "return-type": "json",
+    //   "tooltip": true
+    // },
     "custom/ws1": {
       "exec": "/home/bjorn/.config/waybar/scripts/workspace-single.sh 1",
       "format": "{}",
@@ -263,14 +276,12 @@
       "custom/pomodoro",
       "custom/pomodoro-play",
       "custom/pomodoro-skip",
-      "custom/separator",
       "custom/spotify-icon",
       "custom/spotify",
       "custom/spotify-prev",
       "custom/spotify-play",
       "custom/spotify-next",
-      "custom/update",
-      "custom/screenrecording-indicator"
+      "custom/update"
     ],
     "modules-right": [
       "group/tray-expander",
@@ -495,10 +506,6 @@
       "return-type": "json",
       "on-click": "hyprctl dispatch workspace 6",
       "tooltip": true
-    },
-    "custom/separator": {
-      "format": "| ",
-      "tooltip": false
     },
     "tray": {
       "icon-size": 13,
