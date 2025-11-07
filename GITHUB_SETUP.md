@@ -4,16 +4,16 @@
 
 1. **Create a new repository on GitHub**
    - Go to https://github.com/new
-   - Repository name: `dotfiles` (or any name you prefer)
-   - Description: "My Arch Linux Hyprland configuration"
+   - Repository name: `GHyprland`
+   - Description: "Theme-agnostic Hyprland configuration with advanced Waybar modules"
    - Make it **Public** (so you can easily clone it on new machines) or **Private**
    - **Do NOT** initialize with README, .gitignore, or license (we already have these)
 
 2. **Connect your local repository to GitHub**
 
    ```bash
-   cd ~/dotfiles
-   git remote add origin https://github.com/YOUR_USERNAME/dotfiles.git
+   cd ~/GHyprland
+   git remote add origin https://github.com/YOUR_USERNAME/GHyprland.git
    git branch -M main
    git push -u origin main
    ```
@@ -24,7 +24,7 @@
 
    After pushing, update the clone URL in README.md:
    ```bash
-   cd ~/dotfiles
+   cd ~/GHyprland
    # Edit README.md and replace YOUR_USERNAME with your actual username
    nano README.md
    git add README.md
@@ -38,10 +38,10 @@ On your new Arch Linux machine:
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/dotfiles.git ~/dotfiles
+git clone https://github.com/YOUR_USERNAME/GHyprland.git ~/GHyprland
 
 # Run the installation script
-cd ~/dotfiles
+cd ~/GHyprland
 ./install.sh
 
 # Log out and log back in
@@ -54,13 +54,13 @@ That's it! Your new system will be configured exactly like your current setup.
 ### After making changes to your config files:
 
 ```bash
-cd ~/dotfiles
+cd ~/GHyprland
 
 # Copy updated configs (if not using symlinks)
-cp ~/.config/hypr/*.conf ~/dotfiles/hypr/
-cp ~/.config/waybar/config.jsonc ~/dotfiles/waybar/
-cp ~/.config/waybar/style.css ~/dotfiles/waybar/
-cp ~/.config/waybar/scripts/* ~/dotfiles/waybar/scripts/
+cp ~/.config/hypr/*.conf ~/GHyprland/hypr/
+cp ~/.config/waybar/config.jsonc ~/GHyprland/waybar/
+cp ~/.config/waybar/style.css ~/GHyprland/waybar/
+cp ~/.config/waybar/scripts/* ~/GHyprland/waybar/scripts/
 
 # Or if using symlinks (recommended), changes are already in the repo
 
@@ -73,7 +73,7 @@ git push
 ### Pull updates on another machine:
 
 ```bash
-cd ~/dotfiles
+cd ~/GHyprland
 git pull
 ./install.sh --skip-packages  # Refresh symlinks only
 ```
@@ -95,8 +95,8 @@ For easier pushing without entering password every time:
 
 3. **Change remote to SSH**:
    ```bash
-   cd ~/dotfiles
-   git remote set-url origin git@github.com:YOUR_USERNAME/dotfiles.git
+   cd ~/GHyprland
+   git remote set-url origin git@github.com:YOUR_USERNAME/GHyprland.git
    ```
 
 Now you can push without entering credentials!

@@ -1,6 +1,6 @@
-# Dotfiles - Arch Linux Hyprland Setup
+# GHyprland - Theme-Agnostic Hyprland Configuration
 
-My personal Arch Linux configuration featuring Hyprland, Waybar with custom modules, and a research-based circadian rhythm color temperature system.
+A comprehensive Hyprland configuration that works seamlessly with any theme, featuring advanced Waybar modules and a research-based circadian rhythm color temperature system.
 
 ## Features
 
@@ -46,8 +46,8 @@ Based on CDC/NIOSH research and academic studies on circadian rhythms and melato
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/dotfiles.git ~/dotfiles
-cd ~/dotfiles
+git clone https://github.com/YOUR_USERNAME/GHyprland.git ~/GHyprland
+cd ~/GHyprland
 ```
 
 2. **Run the installation script**
@@ -77,7 +77,7 @@ If you prefer to install manually or selectively:
 ## Repository Structure
 
 ```
-dotfiles/
+GHyprland/
 ├── hypr/                   # Hyprland configuration files
 │   ├── hyprland.conf       # Main config (sources Omarchy + custom)
 │   ├── monitors.conf       # Monitor setup
@@ -199,10 +199,10 @@ Current setup uses DP-1 and DP-2. Adjust in `~/.config/hypr/monitors.conf` for y
 
 ## Updating
 
-To update your dotfiles:
+To update your configuration:
 
 ```bash
-cd ~/dotfiles
+cd ~/GHyprland
 git pull
 ./install.sh --skip-packages  # Refresh symlinks only
 ```
@@ -237,7 +237,7 @@ cat /sys/class/drm/card1/device/mem_info_vram_used
 
 ## Contributing
 
-This is a personal dotfiles repository, but feel free to:
+This is a personal Hyprland configuration repository, but feel free to:
 - Open issues for questions or suggestions
 - Fork and adapt for your own setup
 - Submit PRs for bug fixes
