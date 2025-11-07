@@ -32,6 +32,7 @@ The configuration uses separate bar configurations for each monitor:
 - **Update interval**: 1 second
 - **Display**: Workspace number + application icons in brackets
 - **Click action**: Switch to that workspace
+- **Tooltip**: Shows workspace number, applications, and window titles
 
 Displays workspaces 1-6 with individual modules for each workspace. Shows Nerd Font icons for applications running on that workspace.
 
@@ -45,11 +46,27 @@ Displays workspaces 1-6 with individual modules for each workspace. Shows Nerd F
 - **Empty workspace**: Grey number only, no background
 - **Occupied workspace**: Number + icons in slim pill-shaped background
 - **Active workspace with apps**: Bold text with slightly brighter pill background
-- **Active workspace without apps**: Circle shape instead of pill
+- **Active workspace without apps**: Same pill shape with blue border
 - Icons repeat for multiple instances of the same app (no multipliers)
 - Smooth 0.3s transitions when workspace state changes
-- Dynamic Island style: pills expand/contract based on content, circles for empty active workspaces
+- Dynamic Island style: pills expand/contract based on content
 - **Icon spacing**: Extra padding on right side (8px) to prevent icons from touching pill edge
+
+**Tooltip format:**
+Shows detailed information about windows on each workspace:
+```
+Workspace 4
+
+Draw.io: VGZ Fabric Architect Overview
+Draw.io: Untitled Diagram
+```
+
+Features:
+- Empty line after workspace number for readability
+- Each window listed separately with application name and window title
+- Clean titles with app name suffixes removed (e.g., " - Chromium", " - draw.io")
+- Multiple windows of the same application shown individually
+- Window titles cleaned: "Chromium: GHberg/GHyprland" instead of "GHberg/GHyprland - Chromium"
 
 **Features:**
 - All workspaces visible on both monitors (not filtered by monitor)
@@ -60,10 +77,7 @@ Displays workspaces 1-6 with individual modules for each workspace. Shows Nerd F
 - Icons repeat for each instance (no multiplier notation like "x2")
 - Real-time updates (1-second interval)
 - CSS classes for styling: `active`, `active-empty`, `occupied`, `empty`, `visible`
-- **Attempted feature (NOT WORKING)**: Colored border for workspaces visible on monitors
-  - Script detects visible workspaces via `hyprctl monitors -j` and adds `visible` class
-  - CSS attempts to apply cyan (#33ccff) border matching Hyprland theme
-  - Currently not displaying - needs troubleshooting
+- Enhanced tooltips showing all window titles for better workspace overview
 
 **Supported application icons:**
 - Chromium/Chrome:
@@ -286,33 +300,7 @@ killall waybar && waybar &
 
 ## Known Issues
 
-### Workspace border for visible monitors not displaying
-
-**Issue**: Attempting to add a colored cyan border (matching Hyprland's active window border) to workspaces that are currently visible on either monitor. The border should help identify which workspaces are being displayed.
-
-**Current status**:
-- Script successfully detects visible workspaces using `hyprctl monitors -j`
-- Script adds `visible` class to the JSON output (verified with test: workspace shows `"class":"active visible"`)
-- CSS rules are defined for `.occupied.visible`, `.active.visible`, and `.active-empty.visible`
-- Border color set to `#33ccff` (cyan from Hyprland theme at `~/.config/omarchy/current/theme/hyprland.conf`)
-- **Problem**: Border is not displaying in waybar despite correct classes being applied
-
-**What was tried**:
-1. Initial attempt with `border-image: linear-gradient(...)` - broke pill shapes (gradient doesn't work with border-radius)
-2. Changed to solid `border: 1px solid #33ccff` with `.visible` selector
-3. Added transparent borders to all states and used `.occupied.visible` combination selectors
-4. Waybar restarted multiple times - no errors in output
-
-**Files modified**:
-- `/home/bjorn/.config/waybar/scripts/workspace-single.sh` - lines 16, 20, 90-93 (monitor detection and visible class)
-- `/home/bjorn/.config/waybar/style.css` - lines 73, 100, 128 (transparent borders) and lines 77-84, 104-111, 132-139 (visible borders)
-
-**Next steps to try**:
-- Verify CSS selector specificity isn't being overridden
-- Test with `!important` flag
-- Check if waybar is actually applying the classes with browser dev tools or waybar debug mode
-- Consider using a different approach (box-shadow instead of border?)
-- Simplify to test with just background-color change on .visible class first
+None currently. Previous issues with workspace visibility indicators have been resolved by implementing enhanced tooltips instead.
 
 ## Troubleshooting
 
