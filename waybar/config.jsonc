@@ -143,6 +143,37 @@
       "return-type": "json",
       "tooltip": true
     },
+    "custom/spotify-prev": {
+      "exec": "/home/bjorn/.config/waybar/scripts/spotify-prev.sh",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "/home/bjorn/.config/waybar/scripts/spotify-prev.sh prev",
+      "tooltip": true
+    },
+    "custom/spotify": {
+      "exec": "/home/bjorn/.config/waybar/scripts/spotify.sh",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "tooltip": true
+    },
+    "custom/spotify-play": {
+      "exec": "/home/bjorn/.config/waybar/scripts/spotify-play.sh",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "/home/bjorn/.config/waybar/scripts/spotify-play.sh toggle",
+      "tooltip": true
+    },
+    "custom/spotify-next": {
+      "exec": "/home/bjorn/.config/waybar/scripts/spotify-next.sh",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "/home/bjorn/.config/waybar/scripts/spotify-next.sh next",
+      "tooltip": true
+    },
     "custom/power": {
       "exec": "/home/bjorn/.config/waybar/scripts/power.sh",
       "format": "€{}/h ",
@@ -230,6 +261,12 @@
     "modules-center": [
       "custom/pomodoro",
       "custom/pomodoro-skip",
+      "custom/separator",
+      "custom/spotify-icon",
+      "custom/spotify",
+      "custom/spotify-prev",
+      "custom/spotify-play",
+      "custom/spotify-next",
       "custom/update",
       "custom/screenrecording-indicator"
     ],
@@ -343,6 +380,50 @@
       "return-type": "json",
       "on-click": "/home/bjorn/.config/waybar/scripts/pomodoro-skip.sh skip",
       "tooltip": true
+    },
+    "custom/spotify-icon": {
+      "exec": "/home/bjorn/.config/waybar/scripts/spotify-icon.sh",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "/home/bjorn/.config/waybar/scripts/spotify-icon.sh toggle",
+      "tooltip": true,
+      "signal": 8
+    },
+    "custom/spotify": {
+      "exec": "/home/bjorn/.config/waybar/scripts/spotify.sh",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "tooltip": true,
+      "signal": 9
+    },
+    "custom/spotify-prev": {
+      "exec": "/home/bjorn/.config/waybar/scripts/spotify-prev.sh",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "/home/bjorn/.config/waybar/scripts/spotify-prev.sh prev",
+      "tooltip": true,
+      "signal": 10
+    },
+    "custom/spotify-play": {
+      "exec": "/home/bjorn/.config/waybar/scripts/spotify-play.sh",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "/home/bjorn/.config/waybar/scripts/spotify-play.sh toggle",
+      "tooltip": true,
+      "signal": 11
+    },
+    "custom/spotify-next": {
+      "exec": "/home/bjorn/.config/waybar/scripts/spotify-next.sh",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "/home/bjorn/.config/waybar/scripts/spotify-next.sh next",
+      "tooltip": true,
+      "signal": 12
     },
     "custom/ws1": {
       "exec": "/home/bjorn/.config/waybar/scripts/workspace-single.sh 1",

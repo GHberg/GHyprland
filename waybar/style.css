@@ -147,3 +147,76 @@ tooltip {
 #custom-screenrecording-indicator.active {
   color: #a55555;
 }
+
+/* Pomodoro timer - left side of combined pill */
+#custom-pomodoro {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: @foreground;
+  border-radius: 10px 0px 0px 10px;
+  padding: 1px 6px 1px 8px;
+  margin: 5px 0px 5px 3px;
+  min-width: 20px;
+  transition: all 0.3s ease;
+}
+
+/* Skip button - right side of combined pill, always visible */
+#custom-pomodoro-skip {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: @foreground;
+  border-radius: 0px 10px 10px 0px;
+  padding: 1px 5px 1px 1px;
+  margin: 5px 3px 5px 0px;
+  min-width: 20px;
+  transition: all 0.3s ease;
+}
+
+/* Spotify icon - no pill shape, just like omarchy icon */
+#custom-spotify-icon {
+  color: @foreground;
+  padding: 0px;
+  margin: 0px 7.5px;
+  min-width: 12px;
+}
+
+/* Spotify info - left side of pill shape */
+#custom-spotify {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: @foreground;
+  border-radius: 10px 0px 0px 10px;
+  padding: 1px 6px 1px 8px;
+  margin: 5px 0px 5px 3px;
+  transition: all 0.3s ease;
+}
+
+/* Spotify previous button - middle of pill */
+#custom-spotify-prev {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: @foreground;
+  border-radius: 0px;
+  padding: 1px 3px;
+  margin: 5px 0px;
+  min-width: 20px;
+  transition: all 0.3s ease;
+}
+
+/* Spotify play button - middle of pill */
+#custom-spotify-play {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: @foreground;
+  border-radius: 0px;
+  padding: 1px 3px;
+  margin: 5px 0px;
+  min-width: 20px;
+  transition: all 0.3s ease;
+}
+
+/* Spotify next button - right side of pill */
+#custom-spotify-next {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: @foreground;
+  border-radius: 0px 10px 10px 0px;
+  padding: 1px 5px 1px 3px;
+  margin: 5px 3px 5px 0px;
+  min-width: 20px;
+  transition: all 0.3s ease;
+}
