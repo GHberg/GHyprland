@@ -1,0 +1,21 @@
+# Temporary files
+*.log
+*.tmp
+*~
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# History files
+.bash_history
+.zsh_history
+
+# Secrets
+*.key
+*.pem
+secrets/

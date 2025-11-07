@@ -1,0 +1,149 @@
+@import "../omarchy/current/theme/waybar.css";
+
+* {
+  background-color: @background;
+  color: @foreground;
+
+  border: none;
+  border-radius: 0;
+  min-height: 0;
+  font-family: 'CaskaydiaMono Nerd Font';
+  font-size: 12px;
+}
+
+.modules-left {
+  margin-left: 8px;
+}
+
+.modules-right {
+  margin-right: 8px;
+}
+
+#workspaces button {
+  all: initial;
+  padding: 0 6px;
+  margin: 0 1.5px;
+  min-width: 9px;
+}
+
+#workspaces button.empty {
+  opacity: 0.5;
+}
+
+#custom-ws1,
+#custom-ws2,
+#custom-ws3,
+#custom-ws4,
+#custom-ws5,
+#custom-ws6 {
+  padding: 0 6px;
+  margin: 0 3px;
+  min-width: 9px;
+  transition: all 0.3s ease;
+  font-size: 11px;
+}
+
+/* All workspaces get pill shape - empty ones are dimmer */
+#custom-ws1.empty,
+#custom-ws2.empty,
+#custom-ws3.empty,
+#custom-ws4.empty,
+#custom-ws5.empty,
+#custom-ws6.empty {
+  opacity: 0.5;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: @foreground;
+  border-radius: 10px;
+  padding: 1px 8px 1px 5px;
+  margin: 5px 3px;
+  min-width: 20px;
+}
+
+/* Occupied workspace - pill shape */
+#custom-ws1.occupied,
+#custom-ws2.occupied,
+#custom-ws3.occupied,
+#custom-ws4.occupied,
+#custom-ws5.occupied,
+#custom-ws6.occupied {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: @foreground;
+  border-radius: 10px;
+  padding: 1px 8px 1px 5px;
+  margin: 5px 3px;
+  min-width: 20px;
+}
+
+/* Active workspace - pill shape with brighter background */
+#custom-ws1.active,
+#custom-ws2.active,
+#custom-ws3.active,
+#custom-ws4.active,
+#custom-ws5.active,
+#custom-ws6.active,
+#custom-ws1.active-empty,
+#custom-ws2.active-empty,
+#custom-ws3.active-empty,
+#custom-ws4.active-empty,
+#custom-ws5.active-empty,
+#custom-ws6.active-empty {
+  background-color: rgba(255, 255, 255, 0.25);
+  color: @foreground;
+  border-radius: 10px;
+  padding: 1px 8px 1px 5px;
+  margin: 5px 3px;
+  min-width: 20px;
+  font-weight: bold;
+}
+
+#cpu,
+#battery,
+#pulseaudio,
+#custom-omarchy,
+#custom-screenrecording-indicator,
+#custom-update {
+  min-width: 12px;
+  margin: 0 7.5px;
+}
+
+#tray {
+  margin-right: 16px;
+}
+
+#bluetooth {
+  margin-right: 17px;
+}
+
+#network {
+  margin-right: 13px;
+}
+
+#custom-expand-icon {
+  margin-right: 20px;
+}
+
+tooltip {
+  padding: 2px;
+}
+
+#custom-update {
+  font-size: 10px;
+}
+
+#clock {
+  margin-left: 8.75px;
+}
+
+.hidden {
+  opacity: 0;
+}
+
+#custom-screenrecording-indicator {
+  min-width: 12px;
+  margin-left: 8.75px;
+  font-size: 10px;
+}
+
+#custom-screenrecording-indicator.active {
+  color: #a55555;
+}
