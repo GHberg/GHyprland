@@ -5,6 +5,8 @@
 
 set -euo pipefail
 
+STATE_FILE="/tmp/waybar-spotify-state"
+
 # Handle click
 if [ "${1:-}" = "toggle" ]; then
     playerctl -p spotify play-pause 2>/dev/null
@@ -15,6 +17,15 @@ fi
 if ! playerctl -p spotify status &>/dev/null; then
     echo "{\"text\":\"\",\"tooltip\":\"\",\"class\":\"hidden\"}"
     exit 0
+fi
+
+# Check if collapsed
+if [ -f "$STATE_FILE" ]; then
+    state=$(cat "$STATE_FILE")
+    if [ "$state" = "collapsed" ]; then
+        echo "{\"text\":\"\",\"tooltip\":\"\",\"class\":\"hidden\"}"
+        exit 0
+    fi
 fi
 
 # Get status to show correct icon

@@ -2,15 +2,26 @@
 # ------------------------------------------------------------------
 # spotify.sh – Spotify control and display for Waybar
 #
-# Shows: Icon | Song - Artist | Time | Controls
+# Shows: Song by Artist | Time
 # ------------------------------------------------------------------
 
 set -euo pipefail
+
+STATE_FILE="/tmp/waybar-spotify-state"
 
 # Check if Spotify is running
 if ! playerctl -p spotify status &>/dev/null; then
     echo "{\"text\":\"\",\"tooltip\":\"\",\"class\":\"hidden\"}"
     exit 0
+fi
+
+# Check if collapsed
+if [ -f "$STATE_FILE" ]; then
+    state=$(cat "$STATE_FILE")
+    if [ "$state" = "collapsed" ]; then
+        echo "{\"text\":\"\",\"tooltip\":\"\",\"class\":\"hidden\"}"
+        exit 0
+    fi
 fi
 
 # Get playback info
@@ -47,9 +58,8 @@ if [ ${#artist} -gt 20 ]; then
 fi
 
 # Build display text
-# Using Nerd Font Spotify icon, then title, then artist, then time
-spotify_icon=$'\uf1bc'  # nf-fa-spotify
-display_text="$spotify_icon $title  $artist  $position_str/$duration_str"
+# Format: "Title by Artist  MM:SS/MM:SS" (title in italic)
+display_text="<i>$title</i> by $artist  $position_str/$duration_str"
 
 # Build tooltip
 tooltip="🎵 Spotify\\n\\n"

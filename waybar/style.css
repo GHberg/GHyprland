@@ -170,7 +170,15 @@ tooltip {
   transition: all 0.3s ease;
 }
 
-/* Spotify controls - combined pill shape: Icon+Info | Prev | Play | Next */
+/* Spotify icon - no pill shape, just like omarchy icon */
+#custom-spotify-icon {
+  color: @foreground;
+  padding: 0px;
+  margin: 0px 7.5px;
+  min-width: 12px;
+}
+
+/* Spotify info - left side of pill shape */
 #custom-spotify {
   background-color: rgba(255, 255, 255, 0.15);
   color: @foreground;
@@ -180,6 +188,7 @@ tooltip {
   transition: all 0.3s ease;
 }
 
+/* Spotify previous button - middle of pill */
 #custom-spotify-prev {
   background-color: rgba(255, 255, 255, 0.15);
   color: @foreground;
@@ -190,6 +199,7 @@ tooltip {
   transition: all 0.3s ease;
 }
 
+/* Spotify play button - middle of pill */
 #custom-spotify-play {
   background-color: rgba(255, 255, 255, 0.15);
   color: @foreground;
@@ -200,6 +210,7 @@ tooltip {
   transition: all 0.3s ease;
 }
 
+/* Spotify next button - right side of pill */
 #custom-spotify-next {
   background-color: rgba(255, 255, 255, 0.15);
   color: @foreground;

@@ -262,6 +262,7 @@
       "custom/pomodoro",
       "custom/pomodoro-skip",
       "custom/separator",
+      "custom/spotify-icon",
       "custom/spotify",
       "custom/spotify-prev",
       "custom/spotify-play",
@@ -380,12 +381,22 @@
       "on-click": "/home/bjorn/.config/waybar/scripts/pomodoro-skip.sh skip",
       "tooltip": true
     },
+    "custom/spotify-icon": {
+      "exec": "/home/bjorn/.config/waybar/scripts/spotify-icon.sh",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "/home/bjorn/.config/waybar/scripts/spotify-icon.sh toggle",
+      "tooltip": true,
+      "signal": 8
+    },
     "custom/spotify": {
       "exec": "/home/bjorn/.config/waybar/scripts/spotify.sh",
       "format": "{}",
       "interval": 1,
       "return-type": "json",
-      "tooltip": true
+      "tooltip": true,
+      "signal": 9
     },
     "custom/spotify-prev": {
       "exec": "/home/bjorn/.config/waybar/scripts/spotify-prev.sh",
@@ -393,7 +404,8 @@
       "interval": 1,
       "return-type": "json",
       "on-click": "/home/bjorn/.config/waybar/scripts/spotify-prev.sh prev",
-      "tooltip": true
+      "tooltip": true,
+      "signal": 10
     },
     "custom/spotify-play": {
       "exec": "/home/bjorn/.config/waybar/scripts/spotify-play.sh",
@@ -401,7 +413,8 @@
       "interval": 1,
       "return-type": "json",
       "on-click": "/home/bjorn/.config/waybar/scripts/spotify-play.sh toggle",
-      "tooltip": true
+      "tooltip": true,
+      "signal": 11
     },
     "custom/spotify-next": {
       "exec": "/home/bjorn/.config/waybar/scripts/spotify-next.sh",
@@ -409,7 +422,8 @@
       "interval": 1,
       "return-type": "json",
       "on-click": "/home/bjorn/.config/waybar/scripts/spotify-next.sh next",
-      "tooltip": true
+      "tooltip": true,
+      "signal": 12
     },
     "custom/ws1": {
       "exec": "/home/bjorn/.config/waybar/scripts/workspace-single.sh 1",
