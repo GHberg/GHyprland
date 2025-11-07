@@ -259,7 +259,9 @@
       "custom/ws6"
     ],
     "modules-center": [
+      "custom/pomodoro-icon",
       "custom/pomodoro",
+      "custom/pomodoro-play",
       "custom/pomodoro-skip",
       "custom/separator",
       "custom/spotify-icon",
@@ -366,20 +368,41 @@
       "signal": 14,
       "return-type": "json"
     },
-    "custom/pomodoro": {
-      "exec": "/home/bjorn/.config/waybar/scripts/pomodoro.sh",
+    "custom/pomodoro-icon": {
+      "exec": "/home/bjorn/.config/waybar/scripts/pomodoro-icon.sh",
+      "format": "{}",
       "interval": 1,
       "return-type": "json",
-      "on-click": "/home/bjorn/.config/waybar/scripts/pomodoro.sh toggle",
+      "on-click": "/home/bjorn/.config/waybar/scripts/pomodoro-icon.sh toggle",
+      "tooltip": true,
+      "signal": 13
+    },
+    "custom/pomodoro": {
+      "exec": "/home/bjorn/.config/waybar/scripts/pomodoro.sh",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
       "on-click-right": "/home/bjorn/.config/waybar/scripts/pomodoro.sh reset",
-      "tooltip": true
+      "tooltip": true,
+      "signal": 14
+    },
+    "custom/pomodoro-play": {
+      "exec": "/home/bjorn/.config/waybar/scripts/pomodoro-play.sh",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "/home/bjorn/.config/waybar/scripts/pomodoro-play.sh toggle",
+      "tooltip": true,
+      "signal": 15
     },
     "custom/pomodoro-skip": {
       "exec": "/home/bjorn/.config/waybar/scripts/pomodoro-skip.sh",
+      "format": "{}",
       "interval": 1,
       "return-type": "json",
       "on-click": "/home/bjorn/.config/waybar/scripts/pomodoro-skip.sh skip",
-      "tooltip": true
+      "tooltip": true,
+      "signal": 16
     },
     "custom/spotify-icon": {
       "exec": "/home/bjorn/.config/waybar/scripts/spotify-icon.sh",

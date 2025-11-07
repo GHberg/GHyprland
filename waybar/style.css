@@ -148,7 +148,15 @@ tooltip {
   color: #a55555;
 }
 
-/* Pomodoro timer - left side of combined pill */
+/* Pomodoro icon - no pill shape, just like omarchy icon */
+#custom-pomodoro-icon {
+  color: @foreground;
+  padding: 0px;
+  margin: 0px 7.5px;
+  min-width: 12px;
+}
+
+/* Pomodoro timer - left side of pill shape */
 #custom-pomodoro {
   background-color: rgba(255, 255, 255, 0.15);
   color: @foreground;
@@ -159,12 +167,23 @@ tooltip {
   transition: all 0.3s ease;
 }
 
-/* Skip button - right side of combined pill, always visible */
+/* Pomodoro play button - middle of pill */
+#custom-pomodoro-play {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: @foreground;
+  border-radius: 0px;
+  padding: 1px 3px;
+  margin: 5px 0px;
+  min-width: 20px;
+  transition: all 0.3s ease;
+}
+
+/* Pomodoro skip button - right side of pill */
 #custom-pomodoro-skip {
   background-color: rgba(255, 255, 255, 0.15);
   color: @foreground;
   border-radius: 0px 10px 10px 0px;
-  padding: 1px 5px 1px 1px;
+  padding: 1px 5px 1px 3px;
   margin: 5px 3px 5px 0px;
   min-width: 20px;
   transition: all 0.3s ease;
