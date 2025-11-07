@@ -68,6 +68,7 @@ fi
 if [ "${1:-}" = "skip" ]; then
     phase=$(cat "$PHASE_FILE")
     count=$(cat "$COUNT_FILE")
+    current_state=$(cat "$STATE_FILE")
 
     if [ "$phase" = "work" ]; then
         count=$((count + 1))
@@ -76,19 +77,23 @@ if [ "${1:-}" = "skip" ]; then
         if [ $((count % POMODOROS_UNTIL_LONG)) -eq 0 ]; then
             echo "long_break" > "$PHASE_FILE"
             echo "$LONG_BREAK" > "$TIME_FILE"
-            notify-send "🍅 Pomodoro" "Time for a long break! (15 min)" -t 3000
+            notify-send "🍅 Pomodoro" "Skipped to long break! (15 min)" -t 3000
         else
             echo "short_break" > "$PHASE_FILE"
             echo "$SHORT_BREAK" > "$TIME_FILE"
-            notify-send "🍅 Pomodoro" "Time for a short break! (5 min)" -t 3000
+            notify-send "🍅 Pomodoro" "Skipped to short break! (5 min)" -t 3000
         fi
     else
         echo "work" > "$PHASE_FILE"
         echo "$WORK_TIME" > "$TIME_FILE"
-        notify-send "🍅 Pomodoro" "Back to work! (25 min)" -t 3000
+        notify-send "🍅 Pomodoro" "Skipped to work phase! (25 min)" -t 3000
     fi
     rm -f "$NOTIF_15_FILE" "$NOTIF_5_FILE"
-    echo "running" > "$STATE_FILE"
+
+    # If running, keep running; if stopped, start automatically
+    if [ "$current_state" = "stopped" ]; then
+        echo "running" > "$STATE_FILE"
+    fi
     exit 0
 fi
 
@@ -183,5 +188,9 @@ tooltip+="Completed: $count pomodoros\\n\\n"
 tooltip+="Left click: Start/Pause\\n"
 tooltip+="Right click: Reset"
 
-# Output JSON
-echo "{\"text\":\"$icon $time_display\",\"tooltip\":\"$tooltip\",\"class\":\"$phase\"}"
+# Output JSON with phase and state as classes
+if [ "$state" = "stopped" ]; then
+    echo "{\"text\":\"$icon $time_display\",\"tooltip\":\"$tooltip\",\"class\":\"$phase paused\"}"
+else
+    echo "{\"text\":\"$icon $time_display\",\"tooltip\":\"$tooltip\",\"class\":\"$phase\"}"
+fi
