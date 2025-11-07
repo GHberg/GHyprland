@@ -7,7 +7,7 @@ set -euo pipefail
 
 STATE_FILE="/tmp/waybar-spotify-state"
 
-# Handle click
+# Handle click action for play/pause toggle
 if [ "${1:-}" = "toggle" ]; then
     playerctl -p spotify play-pause 2>/dev/null
     exit 0

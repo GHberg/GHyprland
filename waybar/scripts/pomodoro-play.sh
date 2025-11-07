@@ -11,7 +11,7 @@ COLLAPSE_STATE="/tmp/waybar_pomodoro_collapsed"
 NOTIF_15_FILE="/tmp/waybar_pomodoro_notif_15"
 NOTIF_5_FILE="/tmp/waybar_pomodoro_notif_5"
 
-# Handle click
+# Handle click action for play/pause toggle
 if [ "${1:-}" = "toggle" ]; then
     state=$(cat "$STATE_FILE")
     if [ "$state" = "stopped" ]; then
