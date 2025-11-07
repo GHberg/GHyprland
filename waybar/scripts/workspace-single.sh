@@ -23,7 +23,7 @@ visible_workspaces=$(echo "$monitors" | jq -r '.[].activeWorkspace.id')
 get_app_icon() {
     local class="$1"
     # Use external helper script for icon mapping
-    /home/bjorn/.config/waybar/scripts/app-icons.sh "$class"
+    "$HOME/.config/waybar/scripts/app-icons.sh" "$class"
 }
 
 # Function to extract clean application name from class

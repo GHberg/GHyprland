@@ -10,7 +10,7 @@ COLLAPSE_STATE="/tmp/waybar_pomodoro_collapsed"
 
 # Handle click action
 if [ "${1:-}" = "skip" ]; then
-    /home/bjorn/.config/waybar/scripts/pomodoro.sh skip
+    "$HOME/.config/waybar/scripts/pomodoro.sh" skip
     exit 0
 fi
 
