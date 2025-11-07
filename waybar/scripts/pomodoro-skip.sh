@@ -2,7 +2,7 @@
 # ------------------------------------------------------------------
 # pomodoro-skip.sh – Skip button for Pomodoro timer
 #
-# Only shows when timer is paused
+# Always visible - can skip even while running
 # ------------------------------------------------------------------
 
 set -euo pipefail
@@ -15,17 +15,14 @@ if [ "${1:-}" = "skip" ]; then
     exit 0
 fi
 
-# Check if timer is paused
+# Always show skip button
 if [ -f "$STATE_FILE" ]; then
     state=$(cat "$STATE_FILE")
     if [ "$state" = "stopped" ]; then
-        # Show skip button when paused (with left padding)
-        echo "{\"text\":\" ▶▶\",\"tooltip\":\"Skip to next phase\",\"class\":\"paused\"}"
+        echo "{\"text\":\"▶▶\",\"tooltip\":\"Skip to next phase\",\"class\":\"paused\"}"
     else
-        # Hide when running
-        echo "{\"text\":\"\",\"tooltip\":\"\",\"class\":\"hidden\"}"
+        echo "{\"text\":\"▶▶\",\"tooltip\":\"Skip to next phase\",\"class\":\"running\"}"
     fi
 else
-    # Hide by default
-    echo "{\"text\":\"\",\"tooltip\":\"\",\"class\":\"hidden\"}"
+    echo "{\"text\":\"▶▶\",\"tooltip\":\"Skip to next phase\",\"class\":\"stopped\"}"
 fi
