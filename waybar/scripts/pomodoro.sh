@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------
-# pomodoro.sh – Waybar Pomodoro Timer Module
-#
-# Left click: Start/Pause
-# Right click: Reset
-# Middle click: Skip to next phase
+# pomodoro.sh – Waybar Pomodoro Timer Module (timer display only)
 # ------------------------------------------------------------------
 
 set -euo pipefail
@@ -22,6 +18,15 @@ COUNT_FILE="/tmp/waybar_pomodoro_count"
 PHASE_FILE="/tmp/waybar_pomodoro_phase"
 NOTIF_15_FILE="/tmp/waybar_pomodoro_notif_15"
 NOTIF_5_FILE="/tmp/waybar_pomodoro_notif_5"
+COLLAPSE_STATE="/tmp/waybar_pomodoro_collapsed"
+
+# Helper function to send signals
+send_signals() {
+    pkill -SIGRTMIN+13 waybar  # pomodoro-icon
+    pkill -SIGRTMIN+14 waybar  # pomodoro timer
+    pkill -SIGRTMIN+15 waybar  # pomodoro-play
+    pkill -SIGRTMIN+16 waybar  # pomodoro-skip
+}
 
 # Initialize if files don't exist
 if [ ! -f "$STATE_FILE" ]; then
@@ -40,21 +45,18 @@ if [ ! -f "$PHASE_FILE" ]; then
     echo "work" > "$PHASE_FILE"
 fi
 
-# Handle clicks
-if [ "${1:-}" = "toggle" ]; then
-    state=$(cat "$STATE_FILE")
-    if [ "$state" = "stopped" ]; then
-        echo "running" > "$STATE_FILE"
-        # Reset notification flags when starting
-        rm -f "$NOTIF_15_FILE" "$NOTIF_5_FILE"
-        notify-send "🍅 Pomodoro" "Timer started!" -t 2000
-    else
-        echo "stopped" > "$STATE_FILE"
-        notify-send "🍅 Pomodoro" "Timer paused" -t 2000
-    fi
+if [ ! -f "$COLLAPSE_STATE" ]; then
+    echo "expanded" > "$COLLAPSE_STATE"
+fi
+
+# Check if collapsed - hide if so
+collapse_state=$(cat "$COLLAPSE_STATE")
+if [ "$collapse_state" = "collapsed" ]; then
+    echo "{\"text\":\"\",\"tooltip\":\"\",\"class\":\"hidden\"}"
     exit 0
 fi
 
+# Handle reset click (right click)
 if [ "${1:-}" = "reset" ]; then
     echo "stopped" > "$STATE_FILE"
     echo "$WORK_TIME" > "$TIME_FILE"
@@ -62,6 +64,7 @@ if [ "${1:-}" = "reset" ]; then
     echo "work" > "$PHASE_FILE"
     rm -f "$NOTIF_15_FILE" "$NOTIF_5_FILE"
     notify-send "🍅 Pomodoro" "Timer reset" -t 2000
+    send_signals
     exit 0
 fi
 
@@ -94,6 +97,7 @@ if [ "${1:-}" = "skip" ]; then
     if [ "$current_state" = "stopped" ]; then
         echo "running" > "$STATE_FILE"
     fi
+    send_signals
     exit 0
 fi
 
@@ -141,6 +145,7 @@ if [ "$state" = "running" ] && [ "$time_left" -gt 0 ]; then
         fi
         rm -f "$NOTIF_15_FILE" "$NOTIF_5_FILE"
         echo "stopped" > "$STATE_FILE"
+        send_signals  # Update all modules when phase changes
     fi
 fi
 
@@ -148,23 +153,6 @@ fi
 minutes=$((time_left / 60))
 seconds=$((time_left % 60))
 time_display=$(printf "%02d:%02d" $minutes $seconds)
-
-# Choose icon based on phase and state
-if [ "$state" = "stopped" ]; then
-    icon="⏸"
-else
-    case "$phase" in
-        work)
-            icon="🍅"
-            ;;
-        short_break)
-            icon="🧋"
-            ;;
-        long_break)
-            icon="🥨"
-            ;;
-    esac
-fi
 
 # Build tooltip
 phase_name=""
@@ -185,12 +173,11 @@ tooltip+="Phase: $phase_name\\n"
 tooltip+="Status: ${state^}\\n"
 tooltip+="Time left: $time_display\\n"
 tooltip+="Completed: $count pomodoros\\n\\n"
-tooltip+="Left click: Start/Pause\\n"
 tooltip+="Right click: Reset"
 
-# Output JSON with phase and state as classes
+# Output JSON with just the timer (no icon)
 if [ "$state" = "stopped" ]; then
-    echo "{\"text\":\"$icon $time_display\",\"tooltip\":\"$tooltip\",\"class\":\"$phase paused\"}"
+    echo "{\"text\":\"$time_display\",\"tooltip\":\"$tooltip\",\"class\":\"$phase paused\"}"
 else
-    echo "{\"text\":\"$icon $time_display\",\"tooltip\":\"$tooltip\",\"class\":\"$phase\"}"
+    echo "{\"text\":\"$time_display\",\"tooltip\":\"$tooltip\",\"class\":\"$phase\"}"
 fi
