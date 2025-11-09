@@ -43,11 +43,13 @@ Based on CDC/NIOSH research and academic studies on circadian rhythms and melato
 
 ### Installation
 
+> **🎉 New in v2.0:** Modular installation system! Install only the modules you need. See [MODULAR_INSTALL.md](MODULAR_INSTALL.md) for full documentation.
+
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/GHyprland.git ~/GHyprland
-cd ~/GHyprland
+git clone https://github.com/YOUR_USERNAME/GHyprland.git ~/Repos/GHyprland
+cd ~/Repos/GHyprland
 ```
 
 2. **Run the installation script**
@@ -56,23 +58,60 @@ cd ~/GHyprland
 ./install.sh
 ```
 
-The script will:
+The script will prompt you to select which Waybar modules to install:
+
+**Available modules:**
+- **Everything** - Install all modules
+- **WORKSPACE** - Dynamic workspace indicators with app icons (1-6)
+- **POMODORO** - Pomodoro timer with collapsible controls (25/5/15 cycles)
+- **SYSTEM_METRICS** - System monitoring (CPU, GPU, RAM) with rolling averages
+- **SPOTIFY_LITE** - Spotify control with playback controls
+
+The installer will:
 - Install required packages via pacman
 - Set up Omarchy (Hyprland configuration framework)
-- Create symlinks from the repository to your config directories
+- Create symlinks for selected modules
 - Backup existing configurations
+- Track installed modules for future updates
 
-### Manual Installation
-
-If you prefer to install manually or selectively:
+### Advanced Installation Options
 
 ```bash
-# Install packages only
+# List available modules
+./install.sh --list-modules
+
+# Non-interactive: install specific modules
+./install.sh --modules=WORKSPACE,POMODORO,SYSTEM_METRICS
+
+# Install everything
+./install.sh --modules=WORKSPACE,POMODORO,SYSTEM_METRICS,SPOTIFY_LITE
+
+# Install packages only (skip symlinks)
 ./install.sh --skip-links
 
 # Create symlinks only (packages already installed)
 ./install.sh --skip-packages
+
+# Show help
+./install.sh --help
 ```
+
+### Updating Your Installation
+
+After making changes or pulling updates:
+
+```bash
+cd ~/Repos/GHyprland
+git pull origin main
+./install.sh --update
+```
+
+The update will:
+1. Show your currently installed modules
+2. Offer to update them or change the selection
+3. Re-link all scripts to get the latest versions
+
+See [MODULAR_INSTALL.md](MODULAR_INSTALL.md) for detailed documentation on the modular system.
 
 ## Repository Structure
 
@@ -90,20 +129,30 @@ GHyprland/
 │   ├── style.css           # Waybar styling
 │   └── scripts/            # Custom module scripts
 │       ├── workspace-single.sh
+│       ├── app-icons.sh
 │       ├── cpu.sh
 │       ├── gpu.sh
+│       ├── gpu-icon.sh
 │       ├── ram.sh
 │       ├── power.sh
 │       ├── pomodoro.sh
-│       └── app-icons.sh
+│       ├── pomodoro-icon.sh
+│       ├── pomodoro-play.sh
+│       ├── pomodoro-skip.sh
+│       ├── spotify.sh
+│       ├── spotify-icon.sh
+│       ├── spotify-prev.sh
+│       ├── spotify-play.sh
+│       ├── spotify-next.sh
+│       └── workspaces.sh
 ├── shell/                  # Shell configuration
 │   ├── bashrc
 │   └── bash_profile
 ├── docs/                   # Documentation
-│   └── Linux Arch/         # Detailed configuration guides
-│       ├── Hypr/
-│       └── Waybar/
-├── install.sh              # Automated installation script
+├── modules.conf            # Module definitions (NEW in v2.0)
+├── install.sh              # Modular installation script
+├── MODULAR_INSTALL.md      # Modular system documentation
+├── CHANGELOG.md            # Version history
 └── README.md               # This file
 ```
 
