@@ -8,6 +8,7 @@ A lightweight application usage tracker for Hyprland that monitors active and pa
 - **Passive Time Tracking**: Tracks time when an application is running in the background
 - **Total Time**: Active + Passive time for complete usage statistics
 - **Smart Lock Screen Handling**: Automatically pauses tracking when screen is locked
+- **Quick Launch Menu**: Press `SUPER + A` to show your top 10 most-used apps from the past 7 days
 - **Minimal Overhead**: Simple SQLite database, ~1% CPU usage
 - **CLI Interface**: No complex web UI, just simple command-line queries
 
@@ -31,14 +32,19 @@ A lightweight application usage tracker for Hyprland that monitors active and pa
    ```bash
    cp app-tracker ~/.local/bin/app-tracker
    cp app-stats ~/.local/bin/app-stats
+   cp app-launcher ~/.local/bin/app-launcher
    chmod +x ~/.local/bin/app-tracker
    chmod +x ~/.local/bin/app-stats
+   chmod +x ~/.local/bin/app-launcher
    ```
 
 2. **Already configured in autostart:**
    The tracker is already configured in `hypr/autostart.conf` and will start automatically on boot.
 
-3. **Verify it's running:**
+3. **Hotkey is already configured:**
+   Press `SUPER + A` to open the most-used apps launcher (configured in `hypr/bindings.conf`).
+
+4. **Verify it's running:**
    ```bash
    ps aux | grep app-tracker
    ```
@@ -85,6 +91,28 @@ app-stats all
 
 Shows cumulative statistics across all tracked sessions.
 
+### Quick Launch Menu
+
+Press `SUPER + A` (or run `app-launcher` from terminal) to open a Walker-style menu showing your top 10 most-used applications from the past 7 days.
+
+**Features:**
+- Sorted by total usage time (active + passive)
+- Shows application icons (uses same icon mapping as Waybar)
+- Omarchy-style menu with Walker
+- Click any app to launch it
+- Data refreshes automatically as you use your system
+
+**Example menu:**
+```
+  Alacritty
+  chromium
+  code
+󰝚  Spotify
+  draw.io
+```
+
+Simply select an app and it will launch immediately. The menu tracks your actual usage patterns, so your most-used apps are always at the top!
+
 ## Database Location
 
 Data is stored in: `~/.local/share/app-tracker/usage.db`
@@ -120,6 +148,14 @@ Query tool for viewing statistics:
 - Filters out screensaver entries
 - Supports today/recent/all-time views
 - Formats durations as human-readable (5m, 2h 30m, etc.)
+
+### app-launcher
+Quick launch menu for most-used applications:
+- Queries database for top 10 apps from past 7 days
+- Displays in Walker (Omarchy menu system)
+- Shows app icons using same mapping as Waybar
+- Launches selected app via desktop file or direct command
+- Bound to `SUPER + A` by default
 
 ### Database Schema
 
