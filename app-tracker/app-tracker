@@ -1,0 +1,215 @@
+#!/usr/bin/env python3
+"""
+Application usage tracker for Hyprland
+Tracks active and passive usage time for all running applications
+"""
+
+import json
+import sqlite3
+import subprocess
+import time
+from datetime import datetime
+from pathlib import Path
+
+# Configuration
+DB_PATH = Path.home() / ".local/share/app-tracker/usage.db"
+POLL_INTERVAL = 1.0  # seconds
+
+def init_db():
+    """Initialize SQLite database"""
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Create new table with active/passive tracking
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS app_sessions_v2 (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            app_name TEXT NOT NULL,
+            started_at TEXT NOT NULL,
+            ended_at TEXT,
+            active_seconds INTEGER DEFAULT 0,
+            passive_seconds INTEGER DEFAULT 0
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+
+def get_all_running_apps():
+    """Get all running applications from Hyprland"""
+    try:
+        result = subprocess.run(
+            ['hyprctl', 'clients', '-j'],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        clients = json.loads(result.stdout)
+
+        # Get unique app classes
+        apps = set()
+        for client in clients:
+            app_class = client.get("class", "")
+            if app_class and app_class != "":
+                apps.add(app_class)
+
+        return apps
+    except (subprocess.CalledProcessError, json.JSONDecodeError, KeyError):
+        return set()
+
+def get_active_app():
+    """Get currently active application from Hyprland"""
+    try:
+        result = subprocess.run(
+            ['hyprctl', 'activewindow', '-j'],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        data = json.loads(result.stdout)
+        app_class = data.get("class", "")
+
+        if not app_class or app_class == "":
+            return None
+
+        return app_class
+    except (subprocess.CalledProcessError, json.JSONDecodeError, KeyError):
+        return None
+
+def start_session(app_name):
+    """Start tracking a new app session"""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    started_at = datetime.now().isoformat()
+
+    cursor.execute("""
+        INSERT INTO app_sessions_v2 (app_name, started_at, active_seconds, passive_seconds)
+        VALUES (?, ?, 0, 0)
+    """, (app_name, started_at))
+
+    session_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+
+    return session_id
+
+def end_session(session_id):
+    """End an app session"""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    ended_at = datetime.now().isoformat()
+
+    cursor.execute("""
+        UPDATE app_sessions_v2
+        SET ended_at = ?
+        WHERE id = ?
+    """, (ended_at, session_id))
+
+    conn.commit()
+    conn.close()
+
+def increment_active_time(session_id, seconds):
+    """Add active time to a session"""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE app_sessions_v2
+        SET active_seconds = active_seconds + ?
+        WHERE id = ?
+    """, (seconds, session_id))
+
+    conn.commit()
+    conn.close()
+
+def increment_passive_time(session_id, seconds):
+    """Add passive time to a session"""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE app_sessions_v2
+        SET passive_seconds = passive_seconds + ?
+        WHERE id = ?
+    """, (seconds, session_id))
+
+    conn.commit()
+    conn.close()
+
+def main():
+    print("Starting app tracker with active/passive tracking...")
+    init_db()
+    print(f"Database: {DB_PATH}")
+    print("Tracking all running applications...\n")
+
+    # Track currently running apps: {app_name: session_id}
+    running_sessions = {}
+    was_screensaver_active = False
+
+    try:
+        while True:
+            # Get current state
+            current_running = get_all_running_apps()
+            active_app = get_active_app()
+
+            # Check if screensaver/lock screen is active
+            is_screensaver = active_app and active_app.lower() in ['screensaver', 'hyprlock', 'swaylock']
+
+            # Handle screensaver activation
+            if is_screensaver and not was_screensaver_active:
+                # Screensaver just activated - pause all sessions
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] Screen locked - pausing tracking")
+                for app, session_id in running_sessions.items():
+                    end_session(session_id)
+                running_sessions.clear()
+                was_screensaver_active = True
+
+            # Handle screensaver deactivation
+            elif not is_screensaver and was_screensaver_active:
+                # Screensaver just deactivated - resume tracking
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] Screen unlocked - resuming tracking")
+                was_screensaver_active = False
+
+            # Skip all tracking while screensaver is active
+            if is_screensaver:
+                time.sleep(POLL_INTERVAL)
+                continue
+
+            # Normal tracking when not locked
+            # Start sessions for new apps
+            for app in current_running:
+                if app not in running_sessions:
+                    session_id = start_session(app)
+                    running_sessions[app] = session_id
+                    print(f"[{datetime.now().strftime('%H:%M:%S')}] Started: {app}")
+
+            # End sessions for closed apps
+            for app in list(running_sessions.keys()):
+                if app not in current_running:
+                    end_session(running_sessions[app])
+                    print(f"[{datetime.now().strftime('%H:%M:%S')}] Ended: {app}")
+                    del running_sessions[app]
+
+            # Update active/passive time for all running apps
+            for app in current_running:
+                session_id = running_sessions[app]
+                if app == active_app:
+                    increment_active_time(session_id, int(POLL_INTERVAL))
+                else:
+                    increment_passive_time(session_id, int(POLL_INTERVAL))
+
+            time.sleep(POLL_INTERVAL)
+
+    except KeyboardInterrupt:
+        # Clean shutdown - close all sessions
+        for app, session_id in running_sessions.items():
+            end_session(session_id)
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] Ended: {app}")
+        print("\nStopped app tracker")
+
+if __name__ == "__main__":
+    main()

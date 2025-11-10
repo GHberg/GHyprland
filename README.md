@@ -34,6 +34,14 @@ Research-based color temperature management:
 
 Based on CDC/NIOSH research and academic studies on circadian rhythms and melatonin production.
 
+### Application Usage Tracker
+Lightweight tracker that monitors application usage:
+- **Active time tracking**: Time spent actively focused on each application
+- **Passive time tracking**: Time applications run in the background
+- **Smart lock screen handling**: Pauses tracking when screen is locked
+- **Privacy-focused**: Only tracks app names, no window titles or content
+- **Simple CLI interface**: Query stats with `app-stats today`, `app-stats recent`, `app-stats all`
+
 ## Screenshots
 
 *(Add screenshots here after setup)*
@@ -150,6 +158,10 @@ GHyprland/
 │       ├── spotify-play.sh
 │       ├── spotify-next.sh
 │       └── workspaces.sh
+├── app-tracker/            # Application usage tracking
+│   ├── app-tracker         # Main tracking daemon
+│   ├── app-stats           # Statistics query tool
+│   └── README.md           # Complete documentation
 ├── shell/                  # Shell configuration
 │   ├── bashrc
 │   └── bash_profile
@@ -223,6 +235,7 @@ All Hyprland customizations should be made in `~/.config/hypr/*.conf` files, not
 
 Comprehensive guides are available in the `docs/` directory:
 
+- **[Application Usage Tracker](app-tracker/README.md)**: Lightweight tracking of active and passive application usage with privacy-focused design
 - **[Dynamic Workspace Management](waybar/WORKSPACE.md)**: Complete guide to the intelligent 12-workspace system with auto-show/hide behavior
 - **[Hyprsunset Configuration](docs/Linux%20Arch/Hypr/Hyprsunset%20Configuration.md)**: Detailed explanation of the color temperature system, research basis, and customization
 - **[Waybar Configuration](docs/Linux%20Arch/Waybar/Waybar%20Configuration.md)**: Complete documentation of all Waybar modules, custom scripts, and troubleshooting
