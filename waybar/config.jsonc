@@ -14,7 +14,14 @@
       "custom/ws3",
       "custom/ws4",
       "custom/ws5",
-      "custom/ws6"
+      "custom/ws6",
+      "custom/ws7",
+      "custom/ws8",
+      "custom/ws9",
+      "custom/ws10",
+      "custom/ws11",
+      "custom/ws12",
+      "custom/workspace-add"
     ],
     "modules-center": [
       "custom/pomodoro-icon",
@@ -258,6 +265,62 @@
       "interval": 1,
       "return-type": "json",
       "on-click": "hyprctl dispatch workspace 6",
+      "tooltip": true
+    },
+    "custom/ws7": {
+      "exec": "$HOME/.config/waybar/scripts/workspace-single.sh 7",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "hyprctl dispatch workspace 7",
+      "tooltip": true
+    },
+    "custom/ws8": {
+      "exec": "$HOME/.config/waybar/scripts/workspace-single.sh 8",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "hyprctl dispatch workspace 8",
+      "tooltip": true
+    },
+    "custom/ws9": {
+      "exec": "$HOME/.config/waybar/scripts/workspace-single.sh 9",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "hyprctl dispatch workspace 9",
+      "tooltip": true
+    },
+    "custom/ws10": {
+      "exec": "$HOME/.config/waybar/scripts/workspace-single.sh 10",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "hyprctl dispatch workspace 10",
+      "tooltip": true
+    },
+    "custom/ws11": {
+      "exec": "$HOME/.config/waybar/scripts/workspace-single.sh 11",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "hyprctl dispatch workspace 11",
+      "tooltip": true
+    },
+    "custom/ws12": {
+      "exec": "$HOME/.config/waybar/scripts/workspace-single.sh 12",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "hyprctl dispatch workspace 12",
+      "tooltip": true
+    },
+    "custom/workspace-add": {
+      "exec": "$HOME/.config/waybar/scripts/workspace-add.sh",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "$HOME/.config/waybar/scripts/workspace-add.sh click",
       "tooltip": true
     },
     "custom/pomodoro-icon": {

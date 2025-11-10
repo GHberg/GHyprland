@@ -12,7 +12,11 @@ A comprehensive Hyprland configuration that works seamlessly with any theme, fea
 
 ### Waybar Setup
 - **Multi-monitor configuration** with different content per display
-- **Custom workspace indicators** with Dynamic Island styling showing app icons
+- **Dynamic workspace management** (1-12 workspaces):
+  - Workspaces 1-4: Always visible (core workspaces)
+  - Workspaces 5-12: Auto-show when occupied, auto-hide when empty
+  - "+" button to create new workspaces on-demand
+  - Dynamic Island styling with app icons
 - **System monitoring modules**:
   - CPU usage with rolling average and top processes tooltip
   - GPU usage (AMD RX 9070) with temperature and VRAM monitoring
@@ -62,7 +66,7 @@ The script will prompt you to select which Waybar modules to install:
 
 **Available modules:**
 - **Everything** - Install all modules
-- **WORKSPACE** - Dynamic workspace indicators with app icons (1-6)
+- **WORKSPACE** - Dynamic workspace management with app icons (1-12 workspaces + add button)
 - **POMODORO** - Pomodoro timer with collapsible controls (25/5/15 cycles)
 - **SYSTEM_METRICS** - System monitoring (CPU, GPU, RAM) with rolling averages
 - **SPOTIFY_LITE** - Spotify control with playback controls
@@ -128,8 +132,9 @@ GHyprland/
 │   ├── config.jsonc        # Waybar module configuration
 │   ├── style.css           # Waybar styling
 │   └── scripts/            # Custom module scripts
-│       ├── workspace-single.sh
-│       ├── app-icons.sh
+│       ├── workspace-single.sh    # Individual workspace display (1-12)
+│       ├── workspace-add.sh       # "+" button for adding workspaces
+│       ├── app-icons.sh           # App icon mapping
 │       ├── cpu.sh
 │       ├── gpu.sh
 │       ├── gpu-icon.sh
@@ -218,8 +223,10 @@ All Hyprland customizations should be made in `~/.config/hypr/*.conf` files, not
 
 Comprehensive guides are available in the `docs/` directory:
 
+- **[Dynamic Workspace Management](waybar/WORKSPACE.md)**: Complete guide to the intelligent 12-workspace system with auto-show/hide behavior
 - **[Hyprsunset Configuration](docs/Linux%20Arch/Hypr/Hyprsunset%20Configuration.md)**: Detailed explanation of the color temperature system, research basis, and customization
 - **[Waybar Configuration](docs/Linux%20Arch/Waybar/Waybar%20Configuration.md)**: Complete documentation of all Waybar modules, custom scripts, and troubleshooting
+- **[GPU Monitoring](waybar/GPU_MONITORING.md)**: Multi-vendor GPU monitoring setup and configuration
 
 ## Keybindings
 
@@ -227,10 +234,12 @@ Key default bindings (see `~/.config/hypr/bindings.conf` for complete list):
 
 - `SUPER + Return`: Launch terminal
 - `SUPER + Q`: Close window
-- `SUPER + [1-6]`: Switch to workspace
-- `SUPER + SHIFT + [1-6]`: Move window to workspace
+- `SUPER + [1-6]`: Switch to workspace 1-6
+- `SUPER + SHIFT + [1-6]`: Move window to workspace 1-6
 - `SUPER + F`: Toggle fullscreen
 - `SUPER + Space`: Toggle floating
+
+**Note:** Workspaces 5-12 are accessible via the waybar "+" button or by moving windows to them programmatically. Workspaces 1-4 are always visible.
 
 ## Hardware Specific Notes
 

@@ -1,5 +1,71 @@
 # Changelog
 
+## [2.1.0] - 2025-11-10
+
+### Added - Dynamic Workspace Management
+
+**Major Feature:** Enhanced workspace system with support for up to 12 workspaces and intelligent auto-show/hide behavior.
+
+#### New Features
+
+- **Extended Workspace Support (1-12)**
+  - Workspaces 1-4: Core workspaces, always visible in waybar
+  - Workspaces 5-12: Dynamic workspaces that appear only when occupied
+  - Seamless integration with existing Dynamic Island styling
+
+- **"+" Button for Workspace Creation**
+  - New `workspace-add.sh` script
+  - Click to create and switch to the next sequential workspace
+  - Automatically finds highest workspace ID and creates the next one
+  - Subtle pill-shaped styling with hover effect
+
+- **Intelligent Auto-Hide Behavior**
+  - Workspaces 5-12 automatically appear when you open applications in them
+  - Empty workspaces 5+ automatically hide when you switch away
+  - Hyprland's native workspace cleanup works seamlessly
+  - No manual cleanup required
+
+- **Enhanced workspace-single.sh Script**
+  - Modified to handle 1-12 workspaces
+  - Logic to hide empty workspaces >= 5
+  - Returns "hidden" CSS class for empty dynamic workspaces
+  - Same icon display and tooltip behavior for all workspaces
+
+#### New Files
+
+- `waybar/scripts/workspace-add.sh` - Script for "+" button functionality
+
+#### Changed
+
+- `waybar/config.jsonc` - Added ws7-ws12 modules and workspace-add module
+- `waybar/style.css` - Added CSS styling for ws7-ws12 and hiding rules for empty dynamic workspaces (5-12)
+- `waybar/scripts/workspace-single.sh` - Added logic to hide workspaces 5+ when empty
+
+#### Benefits
+
+1. **Flexibility**: Use as many or as few workspaces as you need
+2. **Clean UI**: Waybar only shows workspaces that are in use
+3. **On-demand Creation**: Easily create new workspaces without keybindings
+4. **Automatic Cleanup**: Empty workspaces disappear automatically
+5. **Scalability**: Support for up to 12 workspaces with room to expand
+
+#### User Experience
+
+**Creating a new workspace:**
+1. Click the "+" button after workspace 4
+2. Automatically switches to workspace 5 (or next available)
+3. Open an application
+4. Workspace 5 appears in waybar with app icon
+
+**Automatic cleanup:**
+1. Create workspace 5 with "+" button
+2. Don't open anything
+3. Switch back to another workspace
+4. Workspace 5 automatically disappears from waybar
+5. Hyprland removes the empty workspace
+
+---
+
 ## [2.0.0] - 2025-11-09
 
 ### Added - Modular Installation System

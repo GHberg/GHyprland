@@ -35,7 +35,14 @@
 #custom-ws3,
 #custom-ws4,
 #custom-ws5,
-#custom-ws6 {
+#custom-ws6,
+#custom-ws7,
+#custom-ws8,
+#custom-ws9,
+#custom-ws10,
+#custom-ws11,
+#custom-ws12,
+#custom-workspace-add {
   padding: 0 6px;
   margin: 0 3px;
   min-width: 9px;
@@ -49,7 +56,13 @@
 #custom-ws3.empty,
 #custom-ws4.empty,
 #custom-ws5.empty,
-#custom-ws6.empty {
+#custom-ws6.empty,
+#custom-ws7.empty,
+#custom-ws8.empty,
+#custom-ws9.empty,
+#custom-ws10.empty,
+#custom-ws11.empty,
+#custom-ws12.empty {
   opacity: 0.5;
   background-color: rgba(255, 255, 255, 0.1);
   color: @foreground;
@@ -65,7 +78,13 @@
 #custom-ws3.occupied,
 #custom-ws4.occupied,
 #custom-ws5.occupied,
-#custom-ws6.occupied {
+#custom-ws6.occupied,
+#custom-ws7.occupied,
+#custom-ws8.occupied,
+#custom-ws9.occupied,
+#custom-ws10.occupied,
+#custom-ws11.occupied,
+#custom-ws12.occupied {
   background-color: rgba(255, 255, 255, 0.15);
   color: @foreground;
   border-radius: 10px;
@@ -81,12 +100,24 @@
 #custom-ws4.active,
 #custom-ws5.active,
 #custom-ws6.active,
+#custom-ws7.active,
+#custom-ws8.active,
+#custom-ws9.active,
+#custom-ws10.active,
+#custom-ws11.active,
+#custom-ws12.active,
 #custom-ws1.active-empty,
 #custom-ws2.active-empty,
 #custom-ws3.active-empty,
 #custom-ws4.active-empty,
 #custom-ws5.active-empty,
-#custom-ws6.active-empty {
+#custom-ws6.active-empty,
+#custom-ws7.active-empty,
+#custom-ws8.active-empty,
+#custom-ws9.active-empty,
+#custom-ws10.active-empty,
+#custom-ws11.active-empty,
+#custom-ws12.active-empty {
   background-color: rgba(255, 255, 255, 0.25);
   color: @foreground;
   border-radius: 10px;
@@ -94,6 +125,37 @@
   margin: 5px 3px;
   min-width: 20px;
   font-weight: bold;
+}
+
+/* Hide empty dynamic workspaces */
+#custom-ws5.hidden,
+#custom-ws6.hidden,
+#custom-ws7.hidden,
+#custom-ws8.hidden,
+#custom-ws9.hidden,
+#custom-ws10.hidden,
+#custom-ws11.hidden,
+#custom-ws12.hidden {
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  font-size: 0;
+}
+
+/* Workspace add button - pill shape with subtle styling */
+#custom-workspace-add {
+  opacity: 0.6;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: @foreground;
+  border-radius: 10px;
+  padding: 1px 8px 1px 5px;
+  margin: 5px 3px;
+  min-width: 20px;
+}
+
+#custom-workspace-add:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 #cpu,

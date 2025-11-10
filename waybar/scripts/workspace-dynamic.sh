@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------
-# workspace-single.sh – Display a single workspace for Waybar
+# workspace-dynamic.sh – Display dynamic workspaces (7+) for Waybar
 #
-# Usage: workspace-single.sh <workspace_id>
-# Displays: <number> [<icons>] with multipliers for duplicates
+# Shows workspaces 7 and above only when they have windows
+# Clicking on a workspace number switches to it
 # ------------------------------------------------------------------
 
 set -euo pipefail
-
-WORKSPACE_ID="${1:-1}"
 
 # Get workspace, client, and monitor information
 workspaces=$(hyprctl workspaces -j)
@@ -22,7 +20,6 @@ visible_workspaces=$(echo "$monitors" | jq -r '.[].activeWorkspace.id')
 # Function to map application class to Nerd Font icon
 get_app_icon() {
     local class="$1"
-    # Use external helper script for icon mapping
     "$HOME/.config/waybar/scripts/app-icons.sh" "$class"
 }
 
@@ -42,18 +39,32 @@ get_app_name() {
     echo "$app_name"
 }
 
-# Check if workspace exists and get window count
-ws_info=$(echo "$workspaces" | jq -r --arg id "$WORKSPACE_ID" '.[] | select(.id == ($id | tonumber))')
+# Get all workspace IDs >= 7 that have windows
+dynamic_workspaces=$(echo "$workspaces" | jq -r '.[] | select(.id >= 7 and .windows > 0) | .id' | sort -n)
 
-if [ -n "$ws_info" ]; then
+# If no dynamic workspaces, output empty
+if [ -z "$dynamic_workspaces" ]; then
+    echo "{\"text\":\"\",\"tooltip\":\"\",\"class\":\"dynamic-workspaces-empty\"}"
+    exit 0
+fi
+
+# Build display for all dynamic workspaces
+display_parts=()
+tooltip_parts=()
+
+while IFS= read -r ws_id; do
+    [ -z "$ws_id" ] && continue
+
+    # Get workspace info
+    ws_info=$(echo "$workspaces" | jq -r --arg id "$ws_id" '.[] | select(.id == ($id | tonumber))')
     window_count=$(echo "$ws_info" | jq -r '.windows')
 
     if [ "$window_count" -gt 0 ]; then
-        # Get all clients on this workspace with both class and title
-        workspace_windows=$(echo "$clients" | jq -c --arg id "$WORKSPACE_ID" \
+        # Get all clients on this workspace
+        workspace_windows=$(echo "$clients" | jq -c --arg id "$ws_id" \
             '.[] | select(.workspace.id == ($id | tonumber)) | {class: .class, title: .title}')
 
-        # Build icon string and tooltip information
+        # Build icon string and tooltip
         icon_string=""
         tooltip_apps=""
 
@@ -68,11 +79,10 @@ if [ -n "$ws_info" ]; then
 
             # Get clean app name
             app_name=$(get_app_name "$class")
-            app_name="$(echo "$app_name" | sed 's/^./\U&/')"  # Capitalize first letter
+            app_name="$(echo "$app_name" | sed 's/^./\U&/')"  # Capitalize
 
-            # Clean up title by removing app name suffix
+            # Clean up title
             if [ -n "$title" ]; then
-                # Remove common app name suffixes from titles
                 title=$(echo "$title" | sed -e 's/ - Chromium$//' -e 's/ - Mozilla Firefox$//' \
                     -e 's/ - draw\.io$//' -e 's/\.drawio//' -e 's/ - Visual Studio Code$//' \
                     -e 's/ - VSCode$//' -e 's/ - Brave$//' -e 's/ - Google Chrome$//')
@@ -90,49 +100,36 @@ if [ -n "$ws_info" ]; then
         icon_string="${icon_string% }"
         tooltip_apps="${tooltip_apps%\\n}"
 
-        # Display format: <number> <icons> (no brackets, icons repeat for each instance)
-        display_text="$WORKSPACE_ID $icon_string"
+        # Build display: workspace number + icons
+        workspace_display="$ws_id $icon_string"
 
-        # Build complete tooltip with empty line after workspace name
-        tooltip_text="Workspace $WORKSPACE_ID\\n\\n$tooltip_apps"
-    else
-        # No windows
-        display_text="$WORKSPACE_ID"
-        tooltip_text="Workspace $WORKSPACE_ID"
-    fi
-
-    # Check if this is the active workspace
-    if [ "$WORKSPACE_ID" -eq "$active_workspace" ]; then
-        # If active but no apps, use special class for circle
-        if [ "$window_count" -eq 0 ]; then
-            css_class="active-empty"
-        else
+        # Determine CSS class
+        if [ "$ws_id" -eq "$active_workspace" ]; then
             css_class="active"
+        else
+            css_class="occupied"
         fi
-    else
-        css_class="occupied"
+
+        # Check if visible on any monitor
+        if echo "$visible_workspaces" | grep -q "^${ws_id}$"; then
+            css_class="${css_class} visible"
+        fi
+
+        # Add span with class and onclick handler
+        display_parts+=("<span class='ws-${css_class}' onclick='hyprctl dispatch workspace ${ws_id}'>$workspace_display</span>")
+
+        # Build tooltip
+        tooltip_parts+=("Workspace $ws_id\\n$tooltip_apps")
     fi
+done <<< "$dynamic_workspaces"
+
+# Join all parts
+if [ ${#display_parts[@]} -eq 0 ]; then
+    echo "{\"text\":\"\",\"tooltip\":\"\",\"class\":\"dynamic-workspaces-empty\"}"
 else
-    # Empty workspace - for workspaces 5+, hide completely
-    if [ "$WORKSPACE_ID" -ge 5 ]; then
-        echo "{\"text\":\"\",\"tooltip\":\"\",\"class\":\"hidden\"}"
-        exit 0
-    fi
-    display_text="$WORKSPACE_ID"
-    tooltip_text="Workspace $WORKSPACE_ID"
-    css_class="empty"
-fi
+    display_text=$(IFS=' '; echo "${display_parts[*]}")
+    tooltip_text=$(printf '%s\n\n' "${tooltip_parts[@]}")
+    tooltip_text="${tooltip_text%\\n\\n}"  # Remove trailing newlines
 
-# For workspaces 5+, if empty (no windows), hide it
-if [ "$WORKSPACE_ID" -ge 5 ] && [ "$window_count" -eq 0 ]; then
-    echo "{\"text\":\"\",\"tooltip\":\"\",\"class\":\"hidden\"}"
-    exit 0
+    echo "{\"text\":\"$display_text\",\"tooltip\":\"$tooltip_text\",\"class\":\"dynamic-workspaces\"}"
 fi
-
-# Check if workspace is visible on any monitor and add 'visible' class
-if echo "$visible_workspaces" | grep -q "^${WORKSPACE_ID}$"; then
-    css_class="${css_class} visible"
-fi
-
-# Output as JSON for Waybar
-echo "{\"text\":\"$display_text\",\"tooltip\":\"$tooltip_text\",\"class\":\"$css_class\"}"

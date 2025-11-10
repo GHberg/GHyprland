@@ -13,28 +13,34 @@ Waybar is configured for Hyprland with an Omarchy theme. The configuration inclu
 The configuration uses separate bar configurations for each monitor:
 
 ### DP-2 (Primary Monitor)
-**Left:** Omarchy menu icon, Workspaces 1-6 (clickable, shows 3-letter app names for single-app workspaces)
+**Left:** Omarchy menu icon, Workspaces 1-12 (dynamic: 1-4 always visible, 5-12 appear when occupied) + "+" button
 **Center:** CPU usage | GPU usage | Power cost | RAM usage | Update indicator | Screen recording indicator
 **Right:** Expandable system tray, Bluetooth, Network, Audio, Battery, Clock
 
 ### DP-1 (Secondary Monitor)
-**Left:** Omarchy menu icon, Workspaces 1-6 (clickable, shows 3-letter app names for single-app workspaces)
+**Left:** Omarchy menu icon, Workspaces 1-12 (dynamic: 1-4 always visible, 5-12 appear when occupied) + "+" button
 **Center:** Pomodoro timer | Update indicator | Screen recording indicator
 **Right:** Expandable system tray, Bluetooth, Network, Audio, Battery, Clock
 
-**Note:** All 6 workspaces are displayed on both monitors for convenience. Workspaces are not tied to specific monitors.
+**Note:** All workspaces are displayed on both monitors for convenience. Workspaces are not tied to specific monitors. Workspaces 5-12 only appear when they have windows.
 
 ## Custom Modules
 
-### Workspace Modules (`custom/ws1` through `custom/ws6`)
-- **Script**: `~/.config/waybar/scripts/workspace-single.sh`
+### Workspace Modules (`custom/ws1` through `custom/ws12` + `custom/workspace-add`)
+- **Script**: `~/.config/waybar/scripts/workspace-single.sh` (workspaces 1-12)
+- **Script**: `~/.config/waybar/scripts/workspace-add.sh` ("+" button)
 - **Helper**: `~/.config/waybar/scripts/app-icons.sh` (icon mapping)
 - **Update interval**: 1 second
-- **Display**: Workspace number + application icons in brackets
-- **Click action**: Switch to that workspace
+- **Display**: Workspace number + application icons
+- **Click action**: Switch to that workspace (or create new for "+")
 - **Tooltip**: Shows workspace number, applications, and window titles
 
-Displays workspaces 1-6 with individual modules for each workspace. Shows Nerd Font icons for applications running on that workspace.
+Displays up to 12 workspaces with intelligent show/hide behavior:
+- **Workspaces 1-4**: Always visible (core workspaces)
+- **Workspaces 5-12**: Automatically appear when occupied, hide when empty
+- **"+" button**: Creates and switches to the next sequential workspace
+
+Shows Nerd Font icons for applications running on each workspace.
 
 **Display format:**
 - **Empty workspace**: `6` (just the number, no background)
@@ -68,6 +74,35 @@ Features:
 - Multiple windows of the same application shown individually
 - Window titles cleaned: "Chromium: GHberg/GHyprland" instead of "GHberg/GHyprland - Chromium"
 
+**Dynamic Workspace Behavior:**
+
+**Core Workspaces (1-4):**
+- Always visible in waybar, even when empty
+- Traditional behavior for main workspaces
+- Show dimmed when empty, highlighted when active
+
+**Dynamic Workspaces (5-12):**
+- Only appear in waybar when they contain windows
+- Automatically hide when emptied
+- Perfect for temporary task organization
+- No clutter when not in use
+
+**"+" Button Workflow:**
+1. Click the "+" button
+2. Automatically finds the highest workspace ID
+3. Creates and switches to next workspace (e.g., workspace 5)
+4. Workspace appears in waybar
+5. Open applications as needed
+6. If you leave it empty and switch away, it disappears automatically
+
+**Example scenario:**
+- You're on workspace 3
+- Click "+" → switches to workspace 5
+- Open a browser → workspace 5 shows "5 " in waybar
+- Switch back to workspace 3
+- Close the browser on workspace 5 → workspace 5 disappears from waybar
+- Hyprland automatically removes the empty workspace
+
 **Features:**
 - All workspaces visible on both monitors (not filtered by monitor)
 - Individual click handlers for each workspace to switch to it
@@ -76,8 +111,9 @@ Features:
 - Handles Chrome web apps (extracts app name from class like `chrome-chatgpt.com__-Default`)
 - Icons repeat for each instance (no multiplier notation like "x2")
 - Real-time updates (1-second interval)
-- CSS classes for styling: `active`, `active-empty`, `occupied`, `empty`, `visible`
+- CSS classes for styling: `active`, `active-empty`, `occupied`, `empty`, `visible`, `hidden`
 - Enhanced tooltips showing all window titles for better workspace overview
+- Seamless integration with Hyprland's native workspace management
 
 **Supported application icons:**
 - Chromium/Chrome:
@@ -94,6 +130,24 @@ Features:
 **Adding new icons:**
 Edit `~/.config/waybar/scripts/app-icons.sh` to add mappings for additional applications. Use Nerd Font codepoints (e.g., `\uf120` for terminal icon).
 
+**Customization:**
+
+**Extending beyond 12 workspaces:**
+To add more workspaces (e.g., 13-20):
+1. Edit `~/.config/waybar/config.jsonc`:
+   - Add to `modules-left`: `"custom/ws13"`, `"custom/ws14"`, etc.
+   - Add module definitions copying the ws7-ws12 pattern
+2. Edit `~/.config/waybar/style.css`:
+   - Add `#custom-ws13, #custom-ws14` to all workspace styling rules
+   - Add to `.hidden` rule for auto-hide behavior
+3. The script automatically handles any workspace number
+
+**Changing core/dynamic workspace boundary:**
+To make workspaces 1-6 always visible and 7-12 dynamic:
+1. Edit `~/.config/waybar/scripts/workspace-single.sh`
+2. Change `if [ "$WORKSPACE_ID" -ge 5 ]` to `if [ "$WORKSPACE_ID" -ge 7 ]`
+3. Update CSS hidden rule from `#custom-ws5.hidden` to `#custom-ws7.hidden`
+
 **Styling customization:**
 Edit `~/.config/waybar/style.css` to adjust the Dynamic Island appearance:
 - **Pill shape**:
@@ -102,6 +156,12 @@ Edit `~/.config/waybar/style.css` to adjust the Dynamic Island appearance:
   - `margin: 5px 3px;` - Spacing around pills (vertical, horizontal)
   - `background-color: rgba(255, 255, 255, 0.15);` - Occupied workspace opacity
   - `background-color: rgba(255, 255, 255, 0.25);` - Active workspace opacity (brighter)
+- **"+" Button**:
+  - `opacity: 0.6;` - Default transparency (0.0 = invisible, 1.0 = solid)
+  - `opacity: 1;` on `:hover` - Full opacity when hovering
+  - `background-color: rgba(255, 255, 255, 0.1);` - Subtle background
+- **Hidden workspaces** (5-12 when empty):
+  - `padding: 0; margin: 0; min-width: 0; font-size: 0;` - Completely hidden, no space taken
 - **Circle shape** (active-empty):
   - `border-radius: 50%;` - Makes it circular
   - `padding: 2px 6px;` - Slightly more padding for circle
