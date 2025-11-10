@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-"""
-Most-Used Apps Launcher
-Shows top 10 most-used applications from the past 7 days
-Uses Walker in dmenu mode for Omarchy-style menu
-"""
+#
+# Most-Used Apps Launcher
+# Shows top 10 most-used applications from the past 7 days
+# Uses Walker in dmenu mode for Omarchy-style menu
+#
 
 # Database location
 DB_PATH="$HOME/.local/share/app-tracker/usage.db"
