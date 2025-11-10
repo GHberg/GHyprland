@@ -1,0 +1,172 @@
+#!/usr/bin/env python3
+"""
+Query application usage statistics
+"""
+
+import sqlite3
+import sys
+from datetime import datetime, timedelta
+from pathlib import Path
+
+DB_PATH = Path.home() / ".local/share/app-tracker/usage.db"
+
+def format_duration(seconds):
+    """Format seconds into human-readable duration"""
+    if seconds < 60:
+        return f"{seconds}s"
+    elif seconds < 3600:
+        minutes = seconds // 60
+        return f"{minutes}m"
+    else:
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        return f"{hours}h {minutes}m"
+
+def get_today_stats():
+    """Get today's app usage statistics"""
+    if not DB_PATH.exists():
+        print("No tracking data found. Start app-tracker first.")
+        return
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    today = datetime.now().date().isoformat()
+
+    cursor.execute("""
+        SELECT
+            app_name,
+            SUM(active_seconds) as active,
+            SUM(passive_seconds) as passive,
+            SUM(active_seconds + passive_seconds) as total,
+            COUNT(*) as sessions
+        FROM app_sessions_v2
+        WHERE date(started_at) = ?
+        AND ended_at IS NOT NULL
+        AND app_name NOT IN ('Screensaver', 'hyprlock', 'swaylock')
+        GROUP BY app_name
+        ORDER BY total DESC
+    """, (today,))
+
+    results = cursor.fetchall()
+    conn.close()
+
+    if not results:
+        print("No activity recorded today.")
+        return
+
+    print(f"\n{'App':<20} {'Active':<10} {'Passive':<10} {'Total':<10} {'Sessions':<10}")
+    print("-" * 65)
+
+    for app_name, active, passive, total, sessions in results:
+        print(f"{app_name:<20} {format_duration(active):<10} {format_duration(passive):<10} {format_duration(total):<10} {sessions:<10}")
+
+    # Totals
+    total_active = sum(row[1] for row in results)
+    total_passive = sum(row[2] for row in results)
+    total_time = sum(row[3] for row in results)
+    print("-" * 65)
+    print(f"{'TOTAL':<20} {format_duration(total_active):<10} {format_duration(total_passive):<10} {format_duration(total_time):<10}")
+    print()
+
+def get_recent_sessions(limit=10):
+    """Get recent app sessions"""
+    if not DB_PATH.exists():
+        print("No tracking data found.")
+        return
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT app_name, started_at, ended_at, active_seconds, passive_seconds
+        FROM app_sessions_v2
+        WHERE ended_at IS NOT NULL
+        AND app_name NOT IN ('Screensaver', 'hyprlock', 'swaylock')
+        ORDER BY started_at DESC
+        LIMIT ?
+    """, (limit,))
+
+    results = cursor.fetchall()
+    conn.close()
+
+    if not results:
+        print("No sessions recorded yet.")
+        return
+
+    print(f"\n{'Time':<12} {'App':<20} {'Active':<10} {'Passive':<10} {'Total':<10}")
+    print("-" * 65)
+
+    for app_name, started_at, ended_at, active, passive in results:
+        time_str = datetime.fromisoformat(started_at).strftime("%H:%M:%S")
+        total = active + passive
+        print(f"{time_str:<12} {app_name:<20} {format_duration(active):<10} {format_duration(passive):<10} {format_duration(total):<10}")
+
+    print()
+
+def get_all_time_stats():
+    """Get all-time statistics"""
+    if not DB_PATH.exists():
+        print("No tracking data found.")
+        return
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            app_name,
+            SUM(active_seconds) as active,
+            SUM(passive_seconds) as passive,
+            SUM(active_seconds + passive_seconds) as total,
+            COUNT(*) as sessions
+        FROM app_sessions_v2
+        WHERE ended_at IS NOT NULL
+        AND app_name NOT IN ('Screensaver', 'hyprlock', 'swaylock')
+        GROUP BY app_name
+        ORDER BY total DESC
+    """)
+
+    results = cursor.fetchall()
+    conn.close()
+
+    if not results:
+        print("No activity recorded.")
+        return
+
+    print(f"\n{'App':<20} {'Active':<10} {'Passive':<10} {'Total':<10} {'Sessions':<10}")
+    print("-" * 65)
+
+    for app_name, active, passive, total, sessions in results:
+        print(f"{app_name:<20} {format_duration(active):<10} {format_duration(passive):<10} {format_duration(total):<10} {sessions:<10}")
+
+    total_active = sum(row[1] for row in results)
+    total_passive = sum(row[2] for row in results)
+    total_time = sum(row[3] for row in results)
+    print("-" * 65)
+    print(f"{'TOTAL':<20} {format_duration(total_active):<10} {format_duration(total_passive):<10} {format_duration(total_time):<10}")
+    print()
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage:")
+        print("  app-stats today          # Today's usage")
+        print("  app-stats recent [N]     # Recent N sessions (default 10)")
+        print("  app-stats all            # All-time statistics")
+        sys.exit(1)
+
+    command = sys.argv[1]
+
+    if command == "today":
+        get_today_stats()
+    elif command == "recent":
+        limit = int(sys.argv[2]) if len(sys.argv) > 2 else 10
+        get_recent_sessions(limit)
+    elif command == "all":
+        get_all_time_stats()
+    else:
+        print(f"Unknown command: {command}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
