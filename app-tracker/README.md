@@ -42,7 +42,7 @@ A lightweight application usage tracker for Hyprland that monitors active and pa
    The tracker is already configured in `hypr/autostart.conf` and will start automatically on boot.
 
 3. **Hotkey is already configured:**
-   Press `SUPER + A` to open the most-used apps launcher (configured in `hypr/bindings.conf`).
+   Press `SUPER + Z` to open the most-used apps launcher (configured in `hypr/bindings.conf`).
 
 4. **Verify it's running:**
    ```bash
@@ -93,25 +93,31 @@ Shows cumulative statistics across all tracked sessions.
 
 ### Quick Launch Menu
 
-Press `SUPER + A` (or run `app-launcher` from terminal) to open a Walker-style menu showing your top 10 most-used applications from the past 7 days.
+Press `SUPER + Z` (or run `app-launcher` from terminal) to open a Walker-style menu showing your top 10 most-used applications from the past 7 days.
 
 **Features:**
 - Sorted by total usage time (active + passive)
-- Shows application icons (uses same icon mapping as Waybar)
+- **Generic & automatic** - works with ANY installed application
+- Shows user-friendly names from .desktop files
+- Web apps (Chrome PWAs) display with clean names (e.g., "ChatGPT" instead of "chrome-chatgpt.com__-Default")
+- Icons from .desktop files or fallback to generic icon
 - Omarchy-style menu with Walker
-- Click any app to launch it
+- Click any app to launch it correctly
 - Data refreshes automatically as you use your system
 
 **Example menu:**
 ```
   Alacritty
-  chromium
-  code
+  Chromium
+  Visual Studio Code
+  ChatGPT
 󰝚  Spotify
-  draw.io
 ```
 
-Simply select an app and it will launch immediately. The menu tracks your actual usage patterns, so your most-used apps are always at the top!
+Simply select an app and it will launch immediately with the correct command. The menu tracks your actual usage patterns, so your most-used apps are always at the top!
+
+**No Configuration Needed:**
+The system automatically discovers your applications, extracts their proper names and launch commands from .desktop files, and handles web apps intelligently. It works out of the box on any system!
 
 ## Database Location
 
@@ -141,6 +147,12 @@ Main tracking daemon that runs in the background:
 - Maintains sessions for all running applications
 - Tracks active vs passive time separately
 - Handles lock screen pause/resume
+- **Automatically extracts app metadata** from .desktop files:
+  - Display names (e.g., "Visual Studio Code" instead of "code")
+  - Launch commands for proper app launching
+  - Icons from standard locations
+- **Detects web apps** (Chrome PWAs) and extracts clean names
+- Stores metadata in database for fast launcher access
 
 ### app-stats
 Query tool for viewing statistics:
@@ -153,13 +165,17 @@ Query tool for viewing statistics:
 Quick launch menu for most-used applications:
 - Queries database for top 10 apps from past 7 days
 - Displays in Walker (Omarchy menu system)
-- Shows app icons using same mapping as Waybar
-- Launches selected app via desktop file or direct command
-- Bound to `SUPER + A` by default
+- **Completely generic** - works with ANY application!
+- Reads app metadata from database (no hardcoded apps)
+- Shows user-friendly names (from .desktop files)
+- Launches apps with correct commands automatically
+- Web apps launch via omarchy-launch-webapp
+- Bound to `SUPER + Z` by default
 
 ### Database Schema
 
 ```sql
+-- Session tracking table
 CREATE TABLE app_sessions_v2 (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     app_name TEXT NOT NULL,
@@ -168,7 +184,24 @@ CREATE TABLE app_sessions_v2 (
     active_seconds INTEGER DEFAULT 0,
     passive_seconds INTEGER DEFAULT 0
 );
+
+-- Application metadata table (NEW!)
+CREATE TABLE app_metadata (
+    app_name TEXT PRIMARY KEY,
+    display_name TEXT,      -- User-friendly name from .desktop file
+    exec_command TEXT,      -- Launch command from .desktop file
+    icon TEXT,              -- Icon name from .desktop file
+    last_updated TEXT       -- When metadata was last extracted
+);
 ```
+
+**How Metadata Works:**
+- Tracker automatically populates metadata when it first sees an app
+- Searches .desktop files in standard XDG locations
+- Extracts Name, Exec, and Icon fields
+- For web apps (Chrome PWAs): parses domain into friendly name
+- Launcher uses this metadata to display and launch apps correctly
+- **No configuration needed** - works out of the box for any app!
 
 ## Example Use Cases
 
