@@ -8,6 +8,7 @@ A lightweight application usage tracker for Hyprland that monitors active and pa
 - **Passive Time Tracking**: Tracks time when an application is running in the background
 - **Total Time**: Active + Passive time for complete usage statistics
 - **Smart Lock Screen Handling**: Automatically pauses tracking when screen is locked
+- **Quick Launch Menu**: Press `SUPER + A` to show your top 10 most-used apps from the past 7 days
 - **Minimal Overhead**: Simple SQLite database, ~1% CPU usage
 - **CLI Interface**: No complex web UI, just simple command-line queries
 
@@ -31,14 +32,19 @@ A lightweight application usage tracker for Hyprland that monitors active and pa
    ```bash
    cp app-tracker ~/.local/bin/app-tracker
    cp app-stats ~/.local/bin/app-stats
+   cp app-launcher ~/.local/bin/app-launcher
    chmod +x ~/.local/bin/app-tracker
    chmod +x ~/.local/bin/app-stats
+   chmod +x ~/.local/bin/app-launcher
    ```
 
 2. **Already configured in autostart:**
    The tracker is already configured in `hypr/autostart.conf` and will start automatically on boot.
 
-3. **Verify it's running:**
+3. **Hotkey is already configured:**
+   Press `SUPER + Z` to open the most-used apps launcher (configured in `hypr/bindings.conf`).
+
+4. **Verify it's running:**
    ```bash
    ps aux | grep app-tracker
    ```
@@ -85,6 +91,34 @@ app-stats all
 
 Shows cumulative statistics across all tracked sessions.
 
+### Quick Launch Menu
+
+Press `SUPER + Z` (or run `app-launcher` from terminal) to open a Walker-style menu showing your top 10 most-used applications from the past 7 days.
+
+**Features:**
+- Sorted by total usage time (active + passive)
+- **Generic & automatic** - works with ANY installed application
+- Shows user-friendly names from .desktop files
+- Web apps (Chrome PWAs) display with clean names (e.g., "ChatGPT" instead of "chrome-chatgpt.com__-Default")
+- Icons from .desktop files or fallback to generic icon
+- Omarchy-style menu with Walker
+- Click any app to launch it correctly
+- Data refreshes automatically as you use your system
+
+**Example menu:**
+```
+  Alacritty
+  Chromium
+  Visual Studio Code
+  ChatGPT
+󰝚  Spotify
+```
+
+Simply select an app and it will launch immediately with the correct command. The menu tracks your actual usage patterns, so your most-used apps are always at the top!
+
+**No Configuration Needed:**
+The system automatically discovers your applications, extracts their proper names and launch commands from .desktop files, and handles web apps intelligently. It works out of the box on any system!
+
 ## Database Location
 
 Data is stored in: `~/.local/share/app-tracker/usage.db`
@@ -113,6 +147,12 @@ Main tracking daemon that runs in the background:
 - Maintains sessions for all running applications
 - Tracks active vs passive time separately
 - Handles lock screen pause/resume
+- **Automatically extracts app metadata** from .desktop files:
+  - Display names (e.g., "Visual Studio Code" instead of "code")
+  - Launch commands for proper app launching
+  - Icons from standard locations
+- **Detects web apps** (Chrome PWAs) and extracts clean names
+- Stores metadata in database for fast launcher access
 
 ### app-stats
 Query tool for viewing statistics:
@@ -121,9 +161,21 @@ Query tool for viewing statistics:
 - Supports today/recent/all-time views
 - Formats durations as human-readable (5m, 2h 30m, etc.)
 
+### app-launcher
+Quick launch menu for most-used applications:
+- Queries database for top 10 apps from past 7 days
+- Displays in Walker (Omarchy menu system)
+- **Completely generic** - works with ANY application!
+- Reads app metadata from database (no hardcoded apps)
+- Shows user-friendly names (from .desktop files)
+- Launches apps with correct commands automatically
+- Web apps launch via omarchy-launch-webapp
+- Bound to `SUPER + Z` by default
+
 ### Database Schema
 
 ```sql
+-- Session tracking table
 CREATE TABLE app_sessions_v2 (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     app_name TEXT NOT NULL,
@@ -132,7 +184,24 @@ CREATE TABLE app_sessions_v2 (
     active_seconds INTEGER DEFAULT 0,
     passive_seconds INTEGER DEFAULT 0
 );
+
+-- Application metadata table (NEW!)
+CREATE TABLE app_metadata (
+    app_name TEXT PRIMARY KEY,
+    display_name TEXT,      -- User-friendly name from .desktop file
+    exec_command TEXT,      -- Launch command from .desktop file
+    icon TEXT,              -- Icon name from .desktop file
+    last_updated TEXT       -- When metadata was last extracted
+);
 ```
+
+**How Metadata Works:**
+- Tracker automatically populates metadata when it first sees an app
+- Searches .desktop files in standard XDG locations
+- Extracts Name, Exec, and Icon fields
+- For web apps (Chrome PWAs): parses domain into friendly name
+- Launcher uses this metadata to display and launch apps correctly
+- **No configuration needed** - works out of the box for any app!
 
 ## Example Use Cases
 

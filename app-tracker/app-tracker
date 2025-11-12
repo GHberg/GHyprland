@@ -8,6 +8,7 @@ import json
 import sqlite3
 import subprocess
 import time
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -22,7 +23,7 @@ def init_db():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    # Create new table with active/passive tracking
+    # Create sessions table with active/passive tracking
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS app_sessions_v2 (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,6 +32,17 @@ def init_db():
             ended_at TEXT,
             active_seconds INTEGER DEFAULT 0,
             passive_seconds INTEGER DEFAULT 0
+        )
+    """)
+
+    # Create metadata table for app information
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS app_metadata (
+            app_name TEXT PRIMARY KEY,
+            display_name TEXT,
+            exec_command TEXT,
+            icon TEXT,
+            last_updated TEXT
         )
     """)
 
@@ -78,8 +90,145 @@ def get_active_app():
     except (subprocess.CalledProcessError, json.JSONDecodeError, KeyError):
         return None
 
+def find_desktop_file(app_name):
+    """Find .desktop file for an application"""
+    search_dirs = [
+        Path.home() / ".local/share/applications",
+        Path("/usr/share/applications"),
+        Path("/usr/local/share/applications"),
+    ]
+
+    # Try exact match first
+    for search_dir in search_dirs:
+        if not search_dir.exists():
+            continue
+
+        # Try app_name.desktop
+        desktop_file = search_dir / f"{app_name.lower()}.desktop"
+        if desktop_file.exists():
+            return desktop_file
+
+        # Try searching for files containing the app name
+        try:
+            for file in search_dir.glob("*.desktop"):
+                if app_name.lower() in file.stem.lower():
+                    return file
+        except (PermissionError, OSError):
+            continue
+
+    return None
+
+def parse_desktop_file(desktop_file):
+    """Parse .desktop file and extract Name, Exec, and Icon"""
+    try:
+        with open(desktop_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        # Extract Name, Exec, and Icon fields
+        name_match = re.search(r'^Name=(.+)$', content, re.MULTILINE)
+        exec_match = re.search(r'^Exec=(.+)$', content, re.MULTILINE)
+        icon_match = re.search(r'^Icon=(.+)$', content, re.MULTILINE)
+
+        name = name_match.group(1) if name_match else None
+        exec_cmd = exec_match.group(1) if exec_match else None
+        icon = icon_match.group(1) if icon_match else None
+
+        # Clean up Exec command (remove %u, %f, etc.)
+        if exec_cmd:
+            exec_cmd = re.sub(r'%[uUfFdDnNickvm]', '', exec_cmd).strip()
+
+        return name, exec_cmd, icon
+    except (IOError, OSError):
+        return None, None, None
+
+def extract_web_app_metadata(app_name):
+    """Extract metadata for Chrome web apps"""
+    # Pattern: chrome-<domain>__<optional-path>-Default
+    match = re.match(r'^chrome-([a-zA-Z0-9.-]+)__.*-Default$', app_name)
+    if not match:
+        return None, None, None
+
+    domain = match.group(1)
+
+    # Generate display name from domain
+    if '.' in domain:
+        # Extract main part before TLD
+        parts = domain.split('.')
+        if len(parts) >= 2:
+            # Handle subdomains (app.hey.com -> Hey, web.whatsapp.com -> Whatsapp)
+            if parts[0] in ['app', 'web', 'mail', 'drive', 'docs', 'photos', 'messages', 'calendar'] and len(parts) >= 3:
+                display_name = parts[1].capitalize()
+            else:
+                display_name = parts[-2].capitalize()
+        else:
+            display_name = domain.capitalize()
+    else:
+        display_name = domain.capitalize()
+
+    # Reconstruct URL for launching
+    exec_cmd = f"omarchy-launch-webapp https://{domain}"
+
+    # Try to get icon from domain
+    icon = ""
+
+    return display_name, exec_cmd, icon
+
+def get_or_create_app_metadata(app_name):
+    """Get app metadata from database or create it if it doesn't exist"""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Check if metadata already exists
+    cursor.execute("SELECT display_name, exec_command, icon FROM app_metadata WHERE app_name = ?", (app_name,))
+    row = cursor.fetchone()
+
+    if row:
+        conn.close()
+        return  # Metadata already exists
+
+    # Extract metadata
+    display_name = None
+    exec_cmd = None
+    icon = None
+
+    # Check if it's a web app
+    if app_name.startswith('chrome-') and '-Default' in app_name:
+        display_name, exec_cmd, icon = extract_web_app_metadata(app_name)
+
+    # Try finding .desktop file
+    if not display_name or not exec_cmd:
+        desktop_file = find_desktop_file(app_name)
+        if desktop_file:
+            name, cmd, ic = parse_desktop_file(desktop_file)
+            if not display_name:
+                display_name = name
+            if not exec_cmd:
+                exec_cmd = cmd
+            if not icon:
+                icon = ic
+
+    # Fallbacks
+    if not display_name:
+        display_name = app_name
+    if not exec_cmd:
+        exec_cmd = app_name
+    if not icon:
+        icon = ""
+
+    # Store metadata
+    cursor.execute("""
+        INSERT OR REPLACE INTO app_metadata (app_name, display_name, exec_command, icon, last_updated)
+        VALUES (?, ?, ?, ?, ?)
+    """, (app_name, display_name, exec_cmd, icon, datetime.now().isoformat()))
+
+    conn.commit()
+    conn.close()
+
 def start_session(app_name):
     """Start tracking a new app session"""
+    # Ensure metadata exists for this app
+    get_or_create_app_metadata(app_name)
+
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
