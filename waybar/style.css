@@ -231,8 +231,19 @@ tooltip {
   transition: all 0.3s ease;
 }
 
-/* RAM usage - right edge of pill */
+/* RAM usage - middle of pill */
 #custom-ram {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: @foreground;
+  border-radius: 0px;
+  padding: 1px 6px;
+  margin: 5px 0px;
+  min-width: 20px;
+  transition: all 0.3s ease;
+}
+
+/* Total Power module - right edge of pill */
+#custom-total_power {
   background-color: rgba(255, 255, 255, 0.15);
   color: @foreground;
   border-radius: 0px 10px 10px 0px;
@@ -242,7 +253,7 @@ tooltip {
   transition: all 0.3s ease;
 }
 
-/* Power module - standalone pill shape */
+/* Power module - standalone pill shape (PARKED) */
 #custom-power {
   background-color: rgba(255, 255, 255, 0.15);
   color: @foreground;
@@ -334,13 +345,74 @@ tooltip {
   transition: all 0.3s ease;
 }
 
-/* Spotify next button - right side of pill */
+/* Spotify next button - middle of pill */
 #custom-spotify-next {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: @foreground;
+  border-radius: 0px;
+  padding: 1px 3px;
+  margin: 5px 0px;
+  min-width: 20px;
+  transition: all 0.3s ease;
+}
+
+/* Spotify recording indicator - middle of pill */
+#custom-spotify-record-icon {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: @foreground;
+  border-radius: 0px;
+  padding: 1px 3px;
+  margin: 5px 0px;
+  min-width: 20px;
+  transition: all 0.3s ease;
+}
+
+#custom-spotify-record-icon.recording-active {
+  color: #ff3333;
+}
+
+#custom-spotify-record-icon.recording-paused {
+  color: #ffaa33;
+}
+
+/* Spotify recording toggle - right side of pill */
+#custom-spotify-record-toggle {
   background-color: rgba(255, 255, 255, 0.15);
   color: @foreground;
   border-radius: 0px 10px 10px 0px;
   padding: 1px 5px 1px 3px;
   margin: 5px 3px 5px 0px;
   min-width: 20px;
+  font-size: 10px;
   transition: all 0.3s ease;
+}
+
+#custom-spotify-record-toggle.recording-enabled {
+  color: #ff3333;
+  font-weight: bold;
+}
+
+#custom-spotify-record-toggle.recording-disabled {
+  color: #888888;
+}
+
+/* Vinyl player toggle - standalone pill shape */
+#custom-vinyl-toggle {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: @foreground;
+  border-radius: 10px;
+  padding: 1px 8px 1px 5px;
+  margin: 5px 3px;
+  min-width: 20px;
+  transition: all 0.3s ease;
+  font-size: 13px;
+}
+
+#custom-vinyl-toggle.vinyl-enabled {
+  color: #33ff33;
+  font-weight: bold;
+}
+
+#custom-vinyl-toggle.vinyl-disabled {
+  color: #888888;
 }

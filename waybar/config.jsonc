@@ -33,6 +33,8 @@
       "custom/spotify-prev",
       "custom/spotify-play",
       "custom/spotify-next",
+      "custom/spotify-record-icon",
+      "custom/spotify-record-toggle",
       "custom/gpu-icon",
       "custom/cpu",
       "custom/gpu",
@@ -43,6 +45,7 @@
       "group/tray-expander",
       "bluetooth",
       "network",
+      "custom/vinyl-toggle",
       "pulseaudio",
       "battery",
       "clock"
@@ -116,6 +119,15 @@
       "format-icons": {
         "default": ["", "", ""]
       }
+    },
+    "custom/vinyl-toggle": {
+      "exec": "$HOME/.config/waybar/scripts/vinyl-toggle.sh",
+      "format": "{}",
+      "interval": 2,
+      "return-type": "json",
+      "on-click": "$HOME/.config/waybar/scripts/vinyl-toggle.sh toggle",
+      "tooltip": true,
+      "signal": 17
     },
     "group/tray-expander": {
       "orientation": "inherit",
@@ -209,6 +221,23 @@
       "interval": 1,
       "return-type": "json",
       "on-click": "$HOME/.config/waybar/scripts/spotify-next.sh next",
+      "tooltip": true
+    },
+    "custom/spotify-record-icon": {
+      "exec": "$HOME/.config/waybar/scripts/spotify-record-icon.sh",
+      "format": "{}",
+      "interval": 2,
+      "return-type": "json",
+      "signal": 14,
+      "tooltip": true
+    },
+    "custom/spotify-record-toggle": {
+      "exec": "$HOME/.config/waybar/scripts/spotify-record-toggle.sh",
+      "format": "{}",
+      "interval": 2,
+      "return-type": "json",
+      "on-click": "$HOME/.config/waybar/scripts/spotify-record-toggle.sh toggle",
+      "signal": 13,
       "tooltip": true
     },
     // PARKED FOR LATER: Power/Energy consumption module
