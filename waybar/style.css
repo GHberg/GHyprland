@@ -416,3 +416,89 @@ tooltip {
 #custom-vinyl-toggle.vinyl-disabled {
   color: #888888;
 }
+
+/* ============================================
+   Context-aware bottom bar - Sioyek highlights
+   ============================================ */
+
+/* Hide the context checker module */
+#custom-context-check {
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  font-size: 0;
+}
+
+/* Base style for all sioyek buttons - pill shape (matches workspace pills) */
+#custom-sioyek-yellow,
+#custom-sioyek-red,
+#custom-sioyek-green,
+#custom-sioyek-blue {
+  padding: 1px 8px 1px 5px;
+  margin: 5px 3px;
+  min-width: 20px;
+  font-size: 1px;
+  border-radius: 10px;
+  transition: all 0.15s ease;
+}
+
+/* Yellow button */
+#custom-sioyek-yellow.yellow {
+  background-color: #facc15;
+  color: #000000;
+}
+#custom-sioyek-yellow.yellow:hover {
+  background-color: #d4a90e;
+}
+#custom-sioyek-yellow.yellow:active {
+  background-color: #a3840b;
+}
+
+/* Red button */
+#custom-sioyek-red.red {
+  background-color: #ef4444;
+  color: #ffffff;
+}
+#custom-sioyek-red.red:hover {
+  background-color: #c73636;
+}
+#custom-sioyek-red.red:active {
+  background-color: #9a2a2a;
+}
+
+/* Green button */
+#custom-sioyek-green.green {
+  background-color: #22c55e;
+  color: #ffffff;
+}
+#custom-sioyek-green.green:hover {
+  background-color: #1a9e4a;
+}
+#custom-sioyek-green.green:active {
+  background-color: #147a39;
+}
+
+/* Blue button */
+#custom-sioyek-blue.blue {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+#custom-sioyek-blue.blue:hover {
+  background-color: #2d68c9;
+}
+#custom-sioyek-blue.blue:active {
+  background-color: #23529c;
+}
+
+/* Hidden state - collapse completely */
+#custom-sioyek-yellow.hidden,
+#custom-sioyek-red.hidden,
+#custom-sioyek-green.hidden,
+#custom-sioyek-blue.hidden {
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  font-size: 0;
+  background: transparent;
+  border-radius: 0;
+}

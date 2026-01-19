@@ -25,6 +25,7 @@ if [ "${1:-}" = "toggle" ]; then
     pkill -SIGRTMIN+3 waybar  # gpu-icon
     pkill -SIGRTMIN+4 waybar  # gpu info
     pkill -SIGRTMIN+6 waybar  # ram
+    pkill -SIGRTMIN+7 waybar  # total_power
     exit 0
 fi
 

@@ -2,7 +2,7 @@
 # ------------------------------------------------------------------
 # cpu.sh – Waybar CPU utilisation module with rolling average
 #
-# Calculates 15-second rolling average (last 3 samples @ 5s interval)
+# Calculates 3-second rolling average (last 3 samples @ 1s interval)
 # ------------------------------------------------------------------
 
 set -euo pipefail

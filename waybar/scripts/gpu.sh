@@ -4,7 +4,7 @@
 #
 # Supports AMD, Nvidia, and Intel GPUs with automatic detection
 # 1️⃣ Detects GPU vendor and uses appropriate method
-# 2️⃣ Calculates 15-second rolling average (last 3 samples)
+# 2️⃣ Calculates 3-second rolling average (last 3 samples @ 1s interval)
 # 3️⃣ Outputs JSON with tooltip showing detailed info
 # ------------------------------------------------------------------
 
@@ -41,34 +41,58 @@ HISTORY_FILE="/tmp/waybar_gpu_history"
 # Function to detect GPU vendor and collect metrics
 detect_and_collect_gpu_metrics() {
     # Try Nvidia first (discrete GPU priority)
-    if command -v nvidia-smi &>/dev/null; then
-        if nvidia_data=$(nvidia-smi --query-gpu=utilization.gpu,temperature.gpu,memory.used,memory.total,power.draw --format=csv,noheader,nounits 2>/dev/null); then
-            gpu_vendor="Nvidia"
-            IFS=',' read -r current_usage temp_primary vram_used_mb vram_total_mb power <<< "$nvidia_data"
+    # Check for actual Nvidia hardware before trying nvidia-smi
+    if lspci 2>/dev/null | grep -qi 'VGA.*NVIDIA\|3D.*NVIDIA\|Display.*NVIDIA'; then
+        if command -v nvidia-smi &>/dev/null; then
+            if nvidia_data=$(nvidia-smi --query-gpu=utilization.gpu,temperature.gpu,memory.used,memory.total,power.draw --format=csv,noheader,nounits 2>/dev/null); then
+                gpu_vendor="Nvidia"
+                IFS=',' read -r current_usage temp_primary vram_used_mb vram_total_mb power <<< "$nvidia_data"
 
-            # Clean up whitespace
-            current_usage=$(echo "$current_usage" | xargs)
-            temp_primary=$(echo "$temp_primary" | xargs)
-            vram_used_mb=$(echo "$vram_used_mb" | xargs)
-            vram_total_mb=$(echo "$vram_total_mb" | xargs)
+                # Clean up whitespace
+                current_usage=$(echo "$current_usage" | xargs)
+                temp_primary=$(echo "$temp_primary" | xargs)
+                vram_used_mb=$(echo "$vram_used_mb" | xargs)
+                vram_total_mb=$(echo "$vram_total_mb" | xargs)
 
-            # Convert MB to GB for consistency
-            vram_used_gb=$(awk "BEGIN {printf \"%.1f\", $vram_used_mb/1024}")
-            vram_total_gb=$(awk "BEGIN {printf \"%.1f\", $vram_total_mb/1024}")
-            vram_percent=$(awk "BEGIN {printf \"%.0f\", ($vram_used_mb/$vram_total_mb)*100}")
+                # Convert MB to GB for consistency
+                vram_used_gb=$(awk "BEGIN {printf \"%.1f\", $vram_used_mb/1024}")
+                vram_total_gb=$(awk "BEGIN {printf \"%.1f\", $vram_total_mb/1024}")
+                vram_percent=$(awk "BEGIN {printf \"%.0f\", ($vram_used_mb/$vram_total_mb)*100}")
 
-            return 0
+                return 0
+            fi
         fi
     fi
 
-    # Try AMD GPUs (check all cards)
+    # Try AMD GPUs (check all cards and prioritize dedicated GPU by VRAM size)
+    best_card=""
+    best_vram=0
+
+    # First pass: find the card with the most VRAM (dedicated GPUs have more)
     for card in /sys/class/drm/card[0-9]; do
         if [ ! -e "$card/device/gpu_busy_percent" ]; then
             continue
         fi
 
+        # Check VRAM size to determine if this is discrete or integrated
+        if [ -e "$card/device/mem_info_vram_total" ]; then
+            vram_total=$(<"$card/device/mem_info_vram_total")
+            if [ "$vram_total" -gt "$best_vram" ]; then
+                best_vram=$vram_total
+                best_card=$card
+            fi
+        else
+            # If no VRAM info, use this card as fallback
+            if [ -z "$best_card" ]; then
+                best_card=$card
+            fi
+        fi
+    done
+
+    # If we found an AMD card, use the best one (highest VRAM = dedicated GPU)
+    if [ -n "$best_card" ]; then
         gpu_vendor="AMD"
-        GPU_BASE="$card/device"
+        GPU_BASE="$best_card/device"
 
         # Read current GPU usage
         if [ -e "$GPU_BASE/gpu_busy_percent" ]; then
@@ -78,7 +102,7 @@ detect_and_collect_gpu_metrics() {
         # Find hwmon directory
         HWMON=""
         if [ -d "$GPU_BASE/hwmon" ]; then
-            HWMON=$(find "$GPU_BASE/hwmon" -maxdepth 1 -type d -name "hwmon*" | head -1)
+            HWMON=$(find "$GPU_BASE/hwmon" -mindepth 1 -maxdepth 1 -type d -name "hwmon*" | head -1)
         fi
 
         # Read temperatures
@@ -104,7 +128,7 @@ detect_and_collect_gpu_metrics() {
         fi
 
         return 0
-    done
+    fi
 
     # Try Intel GPUs
     for card in /sys/class/drm/card[0-9]; do

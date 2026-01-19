@@ -8,6 +8,7 @@
 set -euo pipefail
 
 STATE_FILE="/tmp/waybar-spotify-state"
+RECORDING_ENABLED_FILE="/tmp/waybar-spotify-recording-enabled"
 
 # Check if Spotify is running
 if ! playerctl -p spotify status &>/dev/null; then
@@ -67,6 +68,12 @@ tooltip+="Title: $title\\n"
 tooltip+="Artist: $artist\\n"
 tooltip+="Status: $status\\n"
 tooltip+="Time: $position_str / $duration_str"
+
+# Add recording status if enabled
+if [ -f "$RECORDING_ENABLED_FILE" ] && [ "$(cat "$RECORDING_ENABLED_FILE")" = "1" ]; then
+    tooltip+="\\n\\n⏺ Recording: ENABLED\\n"
+    tooltip+="Quality: 44.1 kHz, 32-bit float"
+fi
 
 # Determine CSS class based on status
 case "$status" in
