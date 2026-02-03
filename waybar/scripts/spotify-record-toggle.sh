@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------
-# spotify-record-toggle.sh – Toggle Spotify recording on/off
+# spotify-record-toggle.sh – Toggle music recording on/off
 #
 # Manages the recording daemon and system clock settings
 # ------------------------------------------------------------------
 
 set -euo pipefail
+
+# shellcheck source=music-player-detect.sh
+. "$(dirname "$0")/music-player-detect.sh"
 
 RECORDING_ENABLED_FILE="/tmp/waybar-spotify-recording-enabled"
 DAEMON_PID_FILE="/tmp/waybar-spotify-record-daemon-pid"
@@ -13,6 +16,9 @@ DAEMON_SCRIPT="$HOME/.config/waybar/scripts/spotify-record-daemon.sh"
 
 # Handle toggle command
 if [ "${1:-}" = "toggle" ]; then
+    PLAYER=$(get_active_player)
+    player_name=$(get_player_display_name "$PLAYER")
+
     if [ -f "$RECORDING_ENABLED_FILE" ] && [ "$(cat "$RECORDING_ENABLED_FILE")" = "1" ]; then
         # Disable recording
         echo "0" > "$RECORDING_ENABLED_FILE"
@@ -31,13 +37,17 @@ if [ "${1:-}" = "toggle" ]; then
         systemctl --user restart pipewire
 
         # Notify user
-        notify-send "Spotify Recording" "Recording disabled" -i media-record
+        notify-send "$player_name Recording" "Recording disabled" -i media-record
     else
         # Enable recording
         echo "1" > "$RECORDING_ENABLED_FILE"
 
-        # Set system clock to 44.1 kHz (CRITICAL for bit-perfect capture)
-        pw-metadata -n settings 0 clock.force-rate 44100
+        # Detect the player's native sample rate for bit-perfect capture
+        local sample_rate
+        sample_rate=$(get_player_sample_rate "$PLAYER")
+
+        # Force system clock to match the player's native rate (avoids resampling)
+        pw-metadata -n settings 0 clock.force-rate "$sample_rate"
 
         # Start daemon
         "$DAEMON_SCRIPT" &
@@ -45,7 +55,7 @@ if [ "${1:-}" = "toggle" ]; then
         echo "$daemon_pid" > "$DAEMON_PID_FILE"
 
         # Notify user
-        notify-send "Spotify Recording" "Recording enabled\nQuality: 44.1 kHz, 32-bit float" -i media-record
+        notify-send "$player_name Recording" "Recording enabled\nQuality: ${sample_rate} Hz, 32-bit float" -i media-record
     fi
 
     # Force refresh of recording modules and spotify info (for tooltip update)
@@ -54,6 +64,24 @@ if [ "${1:-}" = "toggle" ]; then
     pkill -SIGRTMIN+14 waybar  # spotify-record-icon
 
     exit 0
+fi
+
+STATE_FILE="/tmp/waybar-spotify-state"
+
+# Check if any supported player is running
+PLAYER=$(get_active_player)
+if [ -z "$PLAYER" ]; then
+    echo "{\"text\":\"\",\"tooltip\":\"\",\"class\":\"hidden\"}"
+    exit 0
+fi
+
+# Check if collapsed
+if [ -f "$STATE_FILE" ]; then
+    state=$(cat "$STATE_FILE")
+    if [ "$state" = "collapsed" ]; then
+        echo "{\"text\":\"\",\"tooltip\":\"\",\"class\":\"hidden\"}"
+        exit 0
+    fi
 fi
 
 # Display current state

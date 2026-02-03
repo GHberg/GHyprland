@@ -1,17 +1,21 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------
-# spotify.sh – Spotify control and display for Waybar
+# spotify.sh – Music player control and display for Waybar
 #
 # Shows: Song by Artist | Time
 # ------------------------------------------------------------------
 
 set -euo pipefail
 
+# shellcheck source=music-player-detect.sh
+. "$(dirname "$0")/music-player-detect.sh"
+
 STATE_FILE="/tmp/waybar-spotify-state"
 RECORDING_ENABLED_FILE="/tmp/waybar-spotify-recording-enabled"
 
-# Check if Spotify is running
-if ! playerctl -p spotify status &>/dev/null; then
+# Check if any supported player is running
+PLAYER=$(get_active_player)
+if [ -z "$PLAYER" ]; then
     echo "{\"text\":\"\",\"tooltip\":\"\",\"class\":\"hidden\"}"
     exit 0
 fi
@@ -26,11 +30,11 @@ if [ -f "$STATE_FILE" ]; then
 fi
 
 # Get playback info
-status=$(playerctl -p spotify status 2>/dev/null || echo "Stopped")
-title=$(playerctl -p spotify metadata title 2>/dev/null || echo "No Title")
-artist=$(playerctl -p spotify metadata artist 2>/dev/null || echo "Unknown Artist")
-position=$(playerctl -p spotify position 2>/dev/null || echo "0")
-duration=$(playerctl -p spotify metadata mpris:length 2>/dev/null || echo "0")
+status=$(playerctl -p "$PLAYER" status 2>/dev/null || echo "Stopped")
+title=$(playerctl -p "$PLAYER" metadata title 2>/dev/null || echo "No Title")
+artist=$(playerctl -p "$PLAYER" metadata artist 2>/dev/null || echo "Unknown Artist")
+position=$(playerctl -p "$PLAYER" position 2>/dev/null || echo "0")
+duration=$(playerctl -p "$PLAYER" metadata mpris:length 2>/dev/null || echo "0")
 
 # Convert position to seconds (playerctl returns float)
 position_sec=$(printf "%.0f" "$position")
@@ -63,7 +67,8 @@ fi
 display_text="<i>$title</i> by $artist  $position_str/$duration_str"
 
 # Build tooltip
-tooltip="🎵 Spotify\\n\\n"
+player_name=$(get_player_display_name "$PLAYER")
+tooltip="🎵 $player_name\\n\\n"
 tooltip+="Title: $title\\n"
 tooltip+="Artist: $artist\\n"
 tooltip+="Status: $status\\n"
@@ -71,8 +76,10 @@ tooltip+="Time: $position_str / $duration_str"
 
 # Add recording status if enabled
 if [ -f "$RECORDING_ENABLED_FILE" ] && [ "$(cat "$RECORDING_ENABLED_FILE")" = "1" ]; then
+    local rec_rate
+    rec_rate=$(get_player_sample_rate "$PLAYER")
     tooltip+="\\n\\n⏺ Recording: ENABLED\\n"
-    tooltip+="Quality: 44.1 kHz, 32-bit float"
+    tooltip+="Quality: ${rec_rate} Hz, 32-bit float"
 fi
 
 # Determine CSS class based on status

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------
-# spotify-record-daemon.sh – Automatic Spotify recording daemon
+# spotify-record-daemon.sh – Automatic music recording daemon
 #
 # Monitors playerctl metadata and automatically records each track
 # to separate WAV files organized by Artist/Album
@@ -10,8 +10,21 @@
 
 set -euo pipefail
 
+# shellcheck source=music-player-detect.sh
+. "$(dirname "$0")/music-player-detect.sh"
+
+# Detect which player to record
+PLAYER=$(get_active_player)
+if [ -z "$PLAYER" ]; then
+    echo "No supported music player running" >&2
+    exit 1
+fi
+
+PLAYER_DISPLAY=$(get_player_display_name "$PLAYER")
+PLAYER_APP=$(get_player_app_name "$PLAYER")
+
 # Configuration
-RECORDINGS_BASE="$HOME/Recordings/Spotify"
+RECORDINGS_BASE="$HOME/Recordings/$PLAYER_DISPLAY"
 PW_RECORD_PID_FILE="/tmp/waybar-spotify-record-pw-pid"
 LAST_TRACK_ID_FILE="/tmp/waybar-spotify-last-trackid"
 DAEMON_LOG="/tmp/waybar-spotify-record-daemon.log"
@@ -24,7 +37,7 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$DAEMON_LOG"
 }
 
-log "Spotify recording daemon started"
+log "$PLAYER_DISPLAY recording daemon started (player: $PLAYER)"
 
 # Function to sanitize filenames
 sanitize_filename() {
@@ -61,18 +74,18 @@ start_recording() {
     local artist album_artist title album track_num track_id position
 
     # Use albumArtist for folder organization (consistent across all tracks in album)
-    album_artist=$(playerctl -p spotify metadata xesam:albumArtist 2>/dev/null || echo "")
+    album_artist=$(playerctl -p "$PLAYER" metadata xesam:albumArtist 2>/dev/null || echo "")
     # Fallback to track artist if album artist not available
     if [ -z "$album_artist" ]; then
-        album_artist=$(playerctl -p spotify metadata xesam:artist 2>/dev/null || echo "Unknown Artist")
+        album_artist=$(playerctl -p "$PLAYER" metadata xesam:artist 2>/dev/null || echo "Unknown Artist")
     fi
 
-    artist=$(playerctl -p spotify metadata xesam:artist 2>/dev/null || echo "Unknown Artist")
-    title=$(playerctl -p spotify metadata xesam:title 2>/dev/null || echo "Unknown")
-    album=$(playerctl -p spotify metadata xesam:album 2>/dev/null || echo "Singles")
-    track_num=$(playerctl -p spotify metadata xesam:trackNumber 2>/dev/null || echo "00")
-    track_id=$(playerctl -p spotify metadata mpris:trackid 2>/dev/null || echo "")
-    position=$(playerctl -p spotify position 2>/dev/null || echo "0")
+    artist=$(playerctl -p "$PLAYER" metadata xesam:artist 2>/dev/null || echo "Unknown Artist")
+    title=$(playerctl -p "$PLAYER" metadata xesam:title 2>/dev/null || echo "Unknown")
+    album=$(playerctl -p "$PLAYER" metadata xesam:album 2>/dev/null || echo "Singles")
+    track_num=$(playerctl -p "$PLAYER" metadata xesam:trackNumber 2>/dev/null || echo "00")
+    track_id=$(playerctl -p "$PLAYER" metadata mpris:trackid 2>/dev/null || echo "")
+    position=$(playerctl -p "$PLAYER" position 2>/dev/null || echo "0")
 
     # Check track position - only record if at the beginning (within first 3 seconds)
     position_int=$(printf "%.0f" "$position" 2>/dev/null || echo "999")
@@ -122,35 +135,31 @@ start_recording() {
 
     log "Starting recording: $filepath"
 
-    # Find Spotify's PipeWire node name dynamically
-    # First try: pw-cli (more accurate)
-    local spotify_node
-    spotify_node=$(pw-cli list-objects | grep -A 3 "application.name = \"spotify\"" | grep "node.name" | head -1 | awk -F'"' '{print $2}')
+    # Find the player's PipeWire node ID and sample rate
+    local player_node
+    player_node=$(get_player_pw_node "$PLAYER")
+    local sample_rate
+    sample_rate=$(get_player_sample_rate "$PLAYER")
 
-    # Second try: pactl (alternative method)
-    if [ -z "$spotify_node" ]; then
-        spotify_node=$(pactl list sink-inputs | grep -B 20 "application.name = \"spotify\"" | grep "Sink Input" | head -1 | awk '{print $3}' | tr -d '#')
-    fi
+    # If we found the player's node, record from it specifically
+    if [ -n "$player_node" ]; then
+        log "Found $PLAYER_DISPLAY node: $player_node (${sample_rate} Hz) - recording ONLY $PLAYER_DISPLAY audio"
 
-    # If we found Spotify's node, record from it specifically
-    if [ -n "$spotify_node" ]; then
-        log "Found Spotify node: $spotify_node - recording ONLY Spotify audio"
-
-        # Start pw-record targeting ONLY Spotify's audio stream (bit-perfect capture at 44.1 kHz, 32-bit float)
+        # Start pw-record targeting ONLY the player's audio stream (bit-perfect capture)
         pw-record \
-            --target "$spotify_node" \
+            --target "$player_node" \
             --media-category Capture \
-            --rate 44100 \
+            --rate "$sample_rate" \
             --format f32 \
             --channels 2 \
             "$filepath" &
     else
-        log "WARNING: Could not find Spotify node, recording from default monitor (all audio)"
+        log "WARNING: Could not find $PLAYER_DISPLAY node, recording from default monitor (all audio)"
 
         # Fallback: record from monitor (captures all audio)
         pw-record \
             --media-category Capture \
-            --rate 44100 \
+            --rate "$sample_rate" \
             --format f32 \
             --channels 2 \
             "$filepath" &
@@ -173,18 +182,18 @@ cleanup() {
 trap cleanup SIGTERM SIGINT
 
 # Main monitoring loop
-log "Starting metadata monitor"
+log "Starting metadata monitor for $PLAYER_DISPLAY (playerctl -p $PLAYER)"
 
-playerctl -p spotify metadata --follow --format '{{mpris:trackid}}' 2>/dev/null | while read -r track_id; do
-    # Check if Spotify is playing
-    status=$(playerctl -p spotify status 2>/dev/null || echo "Stopped")
+playerctl -p "$PLAYER" metadata --follow --format '{{mpris:trackid}}' 2>/dev/null | while read -r track_id; do
+    # Check if player is playing
+    status=$(playerctl -p "$PLAYER" status 2>/dev/null || echo "Stopped")
 
     if [ "$status" = "Playing" ]; then
         # Stop previous recording and start new one
         stop_recording
         start_recording
     else
-        log "Spotify not playing (status: $status), skipping recording"
+        log "$PLAYER_DISPLAY not playing (status: $status), skipping recording"
     fi
 done
 

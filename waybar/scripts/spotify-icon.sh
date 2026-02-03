@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------
-# spotify-icon.sh – Spotify icon with toggle functionality
+# spotify-icon.sh – Music player icon with toggle functionality
 # ------------------------------------------------------------------
 
 set -euo pipefail
+
+# shellcheck source=music-player-detect.sh
+. "$(dirname "$0")/music-player-detect.sh"
 
 STATE_FILE="/tmp/waybar-spotify-state"
 
@@ -23,24 +26,27 @@ if [ "${1:-}" = "toggle" ]; then
     pkill -SIGRTMIN+10 waybar # spotify-prev
     pkill -SIGRTMIN+11 waybar # spotify-play
     pkill -SIGRTMIN+12 waybar # spotify-next
+    pkill -SIGRTMIN+13 waybar # spotify-record-toggle
+    pkill -SIGRTMIN+14 waybar # spotify-record-icon
     exit 0
 fi
 
-# Check if Spotify is running
-if ! playerctl -p spotify status &>/dev/null; then
-    # Clean up state file when Spotify is not running
+# Check if any supported player is running
+PLAYER=$(get_active_player)
+if [ -z "$PLAYER" ]; then
+    # Clean up state file when no player is running
     rm -f "$STATE_FILE"
     echo "{\"text\":\"\",\"tooltip\":\"\",\"class\":\"hidden\"}"
     exit 0
 fi
 
-# Initialize state file to expanded if Spotify just started
+# Initialize state file to expanded if player just started
 if [ ! -f "$STATE_FILE" ]; then
     echo "expanded" > "$STATE_FILE"
 fi
 
-# Spotify icon only (no pill shape)
-spotify_icon=$'\uf1bc'  # nf-fa-spotify
+# Player-specific icon
+player_icon=$(get_player_icon "$PLAYER")
 
 # Read current state for tooltip
 state=$(cat "$STATE_FILE" 2>/dev/null || echo "expanded")
@@ -51,4 +57,4 @@ else
 fi
 
 # Output JSON with icon and tooltip
-echo "{\"text\":\"$spotify_icon\",\"tooltip\":\"$tooltip\",\"class\":\"icon\"}"
+echo "{\"text\":\"$player_icon\",\"tooltip\":\"$tooltip\",\"class\":\"icon\"}"

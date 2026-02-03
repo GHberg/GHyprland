@@ -5,16 +5,21 @@
 
 set -euo pipefail
 
+# shellcheck source=music-player-detect.sh
+. "$(dirname "$0")/music-player-detect.sh"
+
 STATE_FILE="/tmp/waybar-spotify-state"
 
 # Handle click action for play/pause toggle
 if [ "${1:-}" = "toggle" ]; then
-    playerctl -p spotify play-pause 2>/dev/null
+    PLAYER=$(get_active_player)
+    [ -n "$PLAYER" ] && playerctl -p "$PLAYER" play-pause 2>/dev/null
     exit 0
 fi
 
-# Check if Spotify is running
-if ! playerctl -p spotify status &>/dev/null; then
+# Check if any supported player is running
+PLAYER=$(get_active_player)
+if [ -z "$PLAYER" ]; then
     echo "{\"text\":\"\",\"tooltip\":\"\",\"class\":\"hidden\"}"
     exit 0
 fi
@@ -29,7 +34,7 @@ if [ -f "$STATE_FILE" ]; then
 fi
 
 # Get status to show correct icon
-status=$(playerctl -p spotify status 2>/dev/null || echo "Stopped")
+status=$(playerctl -p "$PLAYER" status 2>/dev/null || echo "Stopped")
 
 if [ "$status" = "Playing" ]; then
     echo "{\"text\":\"⏸\",\"tooltip\":\"Pause\",\"class\":\"control playing\"}"
