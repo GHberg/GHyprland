@@ -46,6 +46,7 @@
       "bluetooth",
       "network",
       "custom/vinyl-toggle",
+      "custom/caffeine-toggle",
       "pulseaudio",
       "battery",
       "clock"
@@ -105,9 +106,10 @@
     "bluetooth": {
       "format": "",
       "format-disabled": "󰂲",
+    "format-off": "󰂲",
       "format-connected": "",
       "tooltip-format": "Devices connected: {num_connections}",
-      "on-click": "blueberry"
+      "on-click": "omarchy-launch-bluetooth"
     },
     "pulseaudio": {
       "format": "{icon}",
@@ -117,6 +119,7 @@
       "scroll-step": 11,
       "format-muted": "",
       "format-icons": {
+      "headphone": "",
         "default": ["", "", ""]
       }
     },
@@ -129,6 +132,15 @@
       "tooltip": true,
       "signal": 17
     },
+    "custom/caffeine-toggle": {
+      "exec": "$HOME/.config/waybar/scripts/caffeine-toggle.sh",
+      "format": "{}",
+      "interval": 2,
+      "return-type": "json",
+      "on-click": "$HOME/.config/waybar/scripts/caffeine-toggle.sh toggle",
+      "tooltip": true,
+      "signal": 18
+    },
     "group/tray-expander": {
       "orientation": "inherit",
       "drawer": {
@@ -138,7 +150,7 @@
       "modules": ["custom/expand-icon", "tray"]
     },
     "custom/expand-icon": {
-      "format": "",
+      "format": "",
       "tooltip": false
     },
     "custom/cpu-icon": {
@@ -432,9 +444,76 @@
       "tooltip": true,
       "signal": 12
     },
+  "custom/voxtype": {
+    "exec": "omarchy-voxtype-status",
+    "return-type": "json",
+    "format": "{icon}",
+    "format-icons": {
+      "idle": "",
+      "recording": "󰍬",
+      "transcribing": "󰔟"
+    },
+    "tooltip": true,
+    "on-click-right": "omarchy-voxtype-config",
+    "on-click": "omarchy-voxtype-model"
+  },
     "tray": {
       "icon-size": 13,
       "spacing": 18
+    }
+  },
+  {
+    // Context-aware bottom bar
+    "reload_style_on_change": true,
+    "layer": "top",
+    "position": "bottom",
+    "spacing": 0,
+    "height": 26,
+    "modules-left": [
+      "custom/context-check"
+    ],
+    "modules-center": [
+      "custom/sioyek-yellow",
+      "custom/sioyek-red",
+      "custom/sioyek-green",
+      "custom/sioyek-blue"
+    ],
+    "custom/context-check": {
+      "exec": "$HOME/.config/waybar/scripts/context-check.sh",
+      "interval": 1,
+      "tooltip": false
+    },
+    "custom/sioyek-yellow": {
+      "exec": "$HOME/.config/waybar/scripts/context-sioyek-btn.sh yellow",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "$HOME/.config/waybar/scripts/context-sioyek-click.sh a",
+      "tooltip": true
+    },
+    "custom/sioyek-red": {
+      "exec": "$HOME/.config/waybar/scripts/context-sioyek-btn.sh red",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "$HOME/.config/waybar/scripts/context-sioyek-click.sh b",
+      "tooltip": true
+    },
+    "custom/sioyek-green": {
+      "exec": "$HOME/.config/waybar/scripts/context-sioyek-btn.sh green",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "$HOME/.config/waybar/scripts/context-sioyek-click.sh c",
+      "tooltip": true
+    },
+    "custom/sioyek-blue": {
+      "exec": "$HOME/.config/waybar/scripts/context-sioyek-btn.sh blue",
+      "format": "{}",
+      "interval": 1,
+      "return-type": "json",
+      "on-click": "$HOME/.config/waybar/scripts/context-sioyek-click.sh d",
+      "tooltip": true
     }
   }
 ]

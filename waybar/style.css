@@ -181,7 +181,7 @@
 }
 
 #custom-expand-icon {
-  margin-right: 20px;
+  margin-right: 18px;
 }
 
 tooltip {
@@ -193,7 +193,7 @@ tooltip {
 }
 
 #clock {
-  margin-left: 8.75px;
+  margin-left: 5px;
 }
 
 .hidden {
@@ -417,6 +417,27 @@ tooltip {
   color: #888888;
 }
 
+/* Caffeine toggle - standalone pill shape */
+#custom-caffeine-toggle {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: @foreground;
+  border-radius: 10px;
+  padding: 1px 8px 1px 5px;
+  margin: 5px 3px;
+  min-width: 20px;
+  transition: all 0.3s ease;
+  font-size: 13px;
+}
+
+#custom-caffeine-toggle.caffeine-enabled {
+  color: #ffaa33;
+  font-weight: bold;
+}
+
+#custom-caffeine-toggle.caffeine-disabled {
+  color: #888888;
+}
+
 /* ============================================
    Context-aware bottom bar - Sioyek highlights
    ============================================ */
@@ -501,4 +522,13 @@ tooltip {
   font-size: 0;
   background: transparent;
   border-radius: 0;
+}
+
+#custom-voxtype {
+  min-width: 12px;
+  margin: 0 0 0 7.5px;
+}
+
+#custom-voxtype.recording {
+  color: #a55555;
 }
