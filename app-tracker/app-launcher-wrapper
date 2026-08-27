@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Wrapper to ensure app-launcher runs with proper environment
+
+export PATH="$HOME/.local/bin:$HOME/.local/share/omarchy/bin:$PATH"
+export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-1}"
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+
+exec /home/bjorn/.local/bin/app-launcher
