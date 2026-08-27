@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+#
+# Most-Used Apps Launcher
+# Shows top 6 most-used applications from the past 7 days
+# Clean and minimal with Nerd Font icons
+#
+
+# Database location
+DB_PATH="$HOME/.local/share/app-tracker/usage.db"
+
+# Temporary mapping file
+MAPPING_FILE=$(mktemp -t app-launcher-mapping-XXXXXX)
+
+# Cleanup on exit
+cleanup() {
+    rm -f "$MAPPING_FILE"
+}
+trap cleanup EXIT
+
+# Check if database exists
+if [ ! -f "$DB_PATH" ]; then
+    notify-send "App Tracker" "No usage data found. Start app-tracker first."
+    exit 1
+fi
+
+# Query database for top 6 apps with their metadata
+query_top_apps_with_metadata() {
+    sqlite3 "$DB_PATH" <<EOF
+SELECT
+    s.app_name,
+    COALESCE(m.display_name, s.app_name) as display_name,
+    COALESCE(m.exec_command, s.app_name) as exec_command
+FROM app_sessions_v2 s
+LEFT JOIN app_metadata m ON s.app_name = m.app_name
+WHERE datetime(s.started_at) >= datetime('now', '-7 days')
+AND s.ended_at IS NOT NULL
+AND s.app_name NOT IN ('Screensaver', 'hyprlock', 'swaylock')
+GROUP BY s.app_name
+ORDER BY SUM(s.active_seconds + s.passive_seconds) DESC
+LIMIT 6;
+EOF
+}
+
+# Get Nerd Font icon for app
+get_app_icon() {
+    local app_name="$1"
+    local icon_glyph=""
+
+    # Use app-icons.sh script if available
+    if [ -f "$HOME/.config/waybar/scripts/app-icons.sh" ]; then
+        icon_glyph=$("$HOME/.config/waybar/scripts/app-icons.sh" "$app_name" 2>/dev/null)
+    fi
+
+    # Fallback to generic window icon if no match
+    if [ -z "$icon_glyph" ] || [ "$icon_glyph" = "" ]; then
+        icon_glyph=""
+    fi
+
+    echo "$icon_glyph"
+}
+
+# Build menu options with icons
+build_menu_options() {
+    local apps=()
+
+    # Clear mapping file
+    > "$MAPPING_FILE"
+
+    while IFS='|' read -r app_name display_name exec_command; do
+        if [ -n "$app_name" ]; then
+            # Get Nerd Font icon
+            local icon_glyph=$(get_app_icon "$display_name")
+
+            # Add to menu with icon
+            apps+=("$icon_glyph  $display_name")
+
+            # Save mapping: display_name -> exec_command
+            echo "$display_name|$exec_command" >> "$MAPPING_FILE"
+        fi
+    done < <(query_top_apps_with_metadata)
+
+    if [ ${#apps[@]} -eq 0 ]; then
+        notify-send "App Launcher" "No apps tracked yet. Use your system for a while first."
+        exit 1
+    fi
+
+    printf '%s\n' "${apps[@]}"
+}
+
+# Get launch command from display name
+get_launch_command() {
+    local display_name="$1"
+
+    if [ -f "$MAPPING_FILE" ]; then
+        while IFS='|' read -r disp_name exec_cmd; do
+            if [ "$disp_name" = "$display_name" ]; then
+                echo "$exec_cmd"
+                return
+            fi
+        done < "$MAPPING_FILE"
+    fi
+
+    # Fallback
+    echo "$display_name"
+}
+
+# Show menu using Walker
+show_menu() {
+    local options
+    options=$(build_menu_options)
+
+    if [ -z "$options" ]; then
+        exit 1
+    fi
+
+    # Use Walker in dmenu mode without search bar (--nosearch)
+    local selected
+    if command -v omarchy-launch-walker &>/dev/null; then
+        selected=$(echo -e "$options" | omarchy-launch-walker --dmenu --nosearch --width 295 --minheight 1 --maxheight 400 -p "Most-Used…" 2>/dev/null)
+    elif command -v walker &>/dev/null; then
+        selected=$(echo -e "$options" | walker --dmenu --nosearch -p "Most-Used…" 2>/dev/null)
+    else
+        notify-send "App Launcher" "Walker not found. Install walker first."
+        exit 1
+    fi
+
+    if [ -z "$selected" ] || [ "$selected" = "CNCLD" ]; then
+        exit 0
+    fi
+
+    # Extract display name (remove icon and spaces)
+    display_name=$(echo "$selected" | sed -E 's/^[^ ]+ +//')
+
+    # Get launch command
+    launch_cmd=$(get_launch_command "$display_name")
+
+    if [ -n "$launch_cmd" ]; then
+        # Launch the app in the background
+        setsid $launch_cmd >/dev/null 2>&1 &
+    else
+        notify-send "App Launcher" "Could not launch $display_name"
+    fi
+}
+
+# Main
+main() {
+    show_menu
+}
+
+main
